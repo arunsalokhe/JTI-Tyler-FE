@@ -11,7 +11,7 @@ export const SERVICES = [
   { id: 10, name: 'Secretary of State Filing', path: '/services/sos-filing' },
   { id: 11, name: 'Messenger Delivery', path: '/services/messenger-delivery' },
   { id: 12, name: 'Deposition Officer', path: '/services/deposition-officer' },
-  { id: 13, name: 'Tyler EFiling', path: '/services/efiling' },
+  { id: 13, name: 'EFiling', path: '/services/efiling' },
   { id: 14, name: 'JTI EFiling', path: '/services/jti-efiling' },
 ];
 
