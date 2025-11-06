@@ -6,6 +6,13 @@ import CaseParticipants from '../services/2-ProcessServing/components/CasePartic
 import DocumentsUpload from '../services/2-ProcessServing/components/DocumentsUpload';
 import ServeInfo from '../services/2-ProcessServing/components/ServeInfo';
 import OrderDetails from '../services/2-ProcessServing/components/OrderDetails';
+import EFiling from "../services/TylerFiling/src/TylerFilingApp.jsx";
+import NewCase from '../services/JTIFiling/components/NewCase.tsx';
+import AddParty from '../services/JTIFiling/components/AddParty.tsx';
+import AddPartyWithFiledAsTo from '../services/JTIFiling/components/AddPartyWithFiledAsTo.tsx';
+import UploadDocuments from '../services/JTIFiling/components/Uploaddocuments.tsx';
+import Checkout from '../services/JTIFiling/components/Checkout.tsx';
+
 
 export const router = createBrowserRouter([
   {
@@ -36,4 +43,29 @@ export const router = createBrowserRouter([
     path: '/services/process-serving/order-details',
     element: <OrderDetails />,
   },
+  {
+    path: '/services/jti-filing/new-case',
+    element: <NewCase />,
+  },
+  {
+    path: '/services/jti-filing/add-party',
+    element: <AddParty />,
+  },
+  {
+    path: '/services/jti-filing/add-PartyWithFiledAsTo',
+    element: <AddPartyWithFiledAsTo />,
+  },
+  {
+    path: '/services/jti-filing/upload-documents',
+    element: <UploadDocuments />,
+  },
+  {
+    path: '/services/jti-filing/checkout',
+    element: <Checkout />,
+  },
+  {
+    path: "/tyler-filing/*",
+    element: <EFiling />
+  }
+
 ]);
