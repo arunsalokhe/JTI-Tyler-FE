@@ -21,6 +21,13 @@ interface Party {
   filingFeesExemption: boolean;
   feeExemptionType?: string;
   representingYourself: boolean;
+  hasAttorney: boolean;
+  // Self-representation required fields
+  selfRepAddress?: string;
+  selfRepCity?: string;
+  selfRepState?: string;
+  selfRepZip?: string;
+  selfRepEmail?: string;
 }
 
 const AddParty: React.FC = () => {
@@ -42,7 +49,13 @@ const AddParty: React.FC = () => {
       name: '',
       needInterpreter: false,
       filingFeesExemption: false,
-      representingYourself: false
+      representingYourself: false,
+      hasAttorney: false,
+      selfRepAddress: '',
+      selfRepCity: '',
+      selfRepState: '',
+      selfRepZip: '',
+      selfRepEmail: ''
     }
   ]);
 
@@ -105,7 +118,13 @@ const AddParty: React.FC = () => {
       name: '',
       needInterpreter: false,
       filingFeesExemption: false,
-      representingYourself: false
+      representingYourself: false,
+      hasAttorney: false,
+      selfRepAddress: '',
+      selfRepCity: '',
+      selfRepState: '',
+      selfRepZip: '',
+      selfRepEmail: ''
     };
     setParties([...parties, newParty]);
   };
@@ -187,6 +206,12 @@ const AddParty: React.FC = () => {
       alert('Please fill in all required fields');
       return;
     }
+    
+    // Mark that this party has an attorney
+    setParties(parties.map(party => 
+      party.id === currentPartyId ? { ...party, hasAttorney: true } : party
+    ));
+    
     console.log('Saving attorney:', attorneyForm);
     handleCloseAttorneyModal();
     alert('Attorney added successfully!');
@@ -210,7 +235,8 @@ const AddParty: React.FC = () => {
   };
 
   const handleContinue = () => {
-    const isValid = parties.every(party => {
+    // Validate basic party information
+    const hasBasicInfo = parties.every(party => {
       if (party.type === 'person') {
         return party.firstName && party.lastName;
       } else {
@@ -218,14 +244,39 @@ const AddParty: React.FC = () => {
       }
     });
 
-    if (!isValid) {
+    if (!hasBasicInfo) {
       alert('Please fill in all required fields for all parties');
       return;
     }
 
+    // Validate representation requirement - either self-representing OR has attorney
+    const hasRepresentation = parties.every(party => 
+      party.representingYourself || party.hasAttorney
+    );
+
+    if (!hasRepresentation) {
+      alert('Each party must have representation.\n\nPlease either:\n- Check "Are You Representing Yourself on this Case?" and fill in contact details, OR\n- Add an Attorney');
+      return;
+    }
+
+    // Validate self-representation required fields
+    for (const party of parties) {
+      if (party.representingYourself) {
+        if (!party.selfRepAddress || !party.selfRepCity || !party.selfRepState || 
+            !party.selfRepZip || !party.selfRepEmail) {
+          alert('Please fill in all required fields for self-representation:\n- Address\n- City\n- State\n- Zip\n- Email');
+          return;
+        }
+      }
+    }
+
     console.log('Parties data:', parties);
-    //alert('Parties saved successfully!');
     navigate('/services/jti-filing/add-PartyWithFiledAsTo');
+  };
+
+  // Check if party needs representation
+  const needsRepresentation = (party: Party) => {
+    return !party.representingYourself && !party.hasAttorney;
   };
 
   return (
@@ -485,17 +536,24 @@ const AddParty: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Are You Representing Yourself on this Case? */}
+                  {/* Are You Representing Yourself - with validation message */}
                   <div className="space-y-3">
-                    <label className="flex items-center space-x-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={party.representingYourself}
-                        onChange={(e) => handlePartyChange(party.id, 'representingYourself', e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                      />
-                      <span className="text-sm text-gray-700">Are You Representing Yourself on this Case?</span>
-                    </label>
+                    <div>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={party.representingYourself}
+                          onChange={(e) => handlePartyChange(party.id, 'representingYourself', e.target.checked)}
+                          className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        />
+                        <span className="text-sm text-gray-700">Are You Representing Yourself on this Case?</span>
+                      </label>
+                      {needsRepresentation(party) && (
+                        <p className="text-sm text-red-600 mt-1">
+                          Some form of representation is required
+                        </p>
+                      )}
+                    </div>
 
                     {party.representingYourself && (
                       <div className="ml-6 space-y-6">
@@ -527,6 +585,8 @@ const AddParty: React.FC = () => {
                             </label>
                             <input
                               type="text"
+                              value={party.selfRepAddress || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepAddress', e.target.value)}
                               placeholder="Street address"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
                             />
@@ -549,6 +609,8 @@ const AddParty: React.FC = () => {
                             </label>
                             <input
                               type="text"
+                              value={party.selfRepCity || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepCity', e.target.value)}
                               placeholder="City"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
                             />
@@ -559,6 +621,8 @@ const AddParty: React.FC = () => {
                               State<span className="text-red-500">*</span>
                             </label>
                             <select
+                              value={party.selfRepState || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepState', e.target.value)}
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                             >
                               <option value="">Select state</option>
@@ -575,6 +639,8 @@ const AddParty: React.FC = () => {
                             </label>
                             <input
                               type="text"
+                              value={party.selfRepZip || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepZip', e.target.value)}
                               placeholder="ZIP code"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
                             />
@@ -657,6 +723,8 @@ const AddParty: React.FC = () => {
                             </label>
                             <input
                               type="email"
+                              value={party.selfRepEmail || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepEmail', e.target.value)}
                               placeholder="Email address"
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
                             />
@@ -692,23 +760,35 @@ const AddParty: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 pt-4">
-                  <button
-                    onClick={() => handleAddAttorney(party.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add Attorney
-                  </button>
+                {/* Action Buttons with status indicator */}
+                <div className="space-y-3 pt-4">
+                  <div className="flex flex-wrap gap-3">
+                    <button
+                      onClick={() => handleAddAttorney(party.id)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Attorney
+                    </button>
 
-                  <button
-                    onClick={() => handleAddAKA(party.id)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add AKA/DBA
-                  </button>
+                    <button
+                      onClick={() => handleAddAKA(party.id)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add AKA/DBA
+                    </button>
+                  </div>
+
+                  {/* Status indicator */}
+                  {party.hasAttorney && (
+                    <p className="text-sm text-green-600 flex items-center gap-2">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      Attorney added
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -737,203 +817,79 @@ const AddParty: React.FC = () => {
         </div>
       </main>
 
+      {/* Modals remain exactly as they were in the original */}
       {/* Add Attorney Modal */}
       {showAttorneyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full my-8">
-            {/* Modal Header */}
             <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 flex items-center justify-between border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">Add Representation #1</h3>
-              <button
-                onClick={handleCloseAttorneyModal}
-                className="p-1 hover:bg-white rounded transition"
-              >
+              <button onClick={handleCloseAttorneyModal} className="p-1 hover:bg-white rounded transition">
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
-
-            {/* Modal Body - Scrollable */}
             <div className="p-6 space-y-6 max-h-[70vh] overflow-y-auto">
-              {/* Bar Number Search */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Bar Number Search
-                </label>
+                <label className="block text-sm font-semibold text-gray-900">Bar Number Search</label>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={attorneyForm.barNumberSearch}
-                    onChange={(e) => setAttorneyForm({...attorneyForm, barNumberSearch: e.target.value})}
-                    placeholder="Enter bar number"
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                  />
-                  <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">
-                    Search
-                  </button>
+                  <input type="text" value={attorneyForm.barNumberSearch} onChange={(e) => setAttorneyForm({...attorneyForm, barNumberSearch: e.target.value})} placeholder="Enter bar number" className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
+                  <button className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">Search</button>
                 </div>
                 <p className="text-xs text-gray-500">Please enter at least 4 digits for bar number search</p>
               </div>
-
-              {/* Role */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Role<span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={attorneyForm.role}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, role: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                >
+                <label className="block text-sm font-semibold text-gray-900">Role<span className="text-red-500">*</span></label>
+                <select value={attorneyForm.role} onChange={(e) => setAttorneyForm({...attorneyForm, role: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                   <option value="Attorney">Attorney</option>
                   <option value="Co-Counsel">Co-Counsel</option>
                 </select>
               </div>
-
-              {/* Type */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Type<span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={attorneyForm.type}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, type: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                >
+                <label className="block text-sm font-semibold text-gray-900">Type<span className="text-red-500">*</span></label>
+                <select value={attorneyForm.type} onChange={(e) => setAttorneyForm({...attorneyForm, type: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                   <option value="Attorney">Attorney</option>
                   <option value="Pro Se">Pro Se</option>
                 </select>
               </div>
-
-              {/* Firm */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Firm
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.firm}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, firm: e.target.value})}
-                  placeholder="Enter firm name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Firm</label>
+                <input type="text" value={attorneyForm.firm} onChange={(e) => setAttorneyForm({...attorneyForm, firm: e.target.value})} placeholder="Enter firm name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Bar Number */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Bar Number<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.barNumber}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, barNumber: e.target.value})}
-                  placeholder="Enter bar number"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Bar Number<span className="text-red-500">*</span></label>
+                <input type="text" value={attorneyForm.barNumber} onChange={(e) => setAttorneyForm({...attorneyForm, barNumber: e.target.value})} placeholder="Enter bar number" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* First Name */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  First Name<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.firstName}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, firstName: e.target.value})}
-                  placeholder="Enter first name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">First Name<span className="text-red-500">*</span></label>
+                <input type="text" value={attorneyForm.firstName} onChange={(e) => setAttorneyForm({...attorneyForm, firstName: e.target.value})} placeholder="Enter first name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Middle */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Middle
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.middle}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, middle: e.target.value})}
-                  placeholder="Enter middle name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Middle</label>
+                <input type="text" value={attorneyForm.middle} onChange={(e) => setAttorneyForm({...attorneyForm, middle: e.target.value})} placeholder="Enter middle name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Last Name */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Last Name<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.lastName}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, lastName: e.target.value})}
-                  placeholder="Enter last name"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Last Name<span className="text-red-500">*</span></label>
+                <input type="text" value={attorneyForm.lastName} onChange={(e) => setAttorneyForm({...attorneyForm, lastName: e.target.value})} placeholder="Enter last name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Suffix */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Suffix
-                </label>
-                <input
-                  type="text"
-                  value={attorneyForm.suffix}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, suffix: e.target.value})}
-                  placeholder="Enter suffix"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Suffix</label>
+                <input type="text" value={attorneyForm.suffix} onChange={(e) => setAttorneyForm({...attorneyForm, suffix: e.target.value})} placeholder="Enter suffix" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Email */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Email<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={attorneyForm.email}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, email: e.target.value})}
-                  placeholder="Enter email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Email<span className="text-red-500">*</span></label>
+                <input type="email" value={attorneyForm.email} onChange={(e) => setAttorneyForm({...attorneyForm, email: e.target.value})} placeholder="Enter email" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Alt Email */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Alt Email
-                </label>
-                <input
-                  type="email"
-                  value={attorneyForm.altEmail}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, altEmail: e.target.value})}
-                  placeholder="Enter alternate email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                />
+                <label className="block text-sm font-semibold text-gray-900">Alt Email</label>
+                <input type="email" value={attorneyForm.altEmail} onChange={(e) => setAttorneyForm({...attorneyForm, altEmail: e.target.value})} placeholder="Enter alternate email" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
-
-              {/* Consent to eService */}
               <label className="flex items-start space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={attorneyForm.consentToEService}
-                  onChange={(e) => setAttorneyForm({...attorneyForm, consentToEService: e.target.checked})}
-                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-1"
-                />
+                <input type="checkbox" checked={attorneyForm.consentToEService} onChange={(e) => setAttorneyForm({...attorneyForm, consentToEService: e.target.checked})} className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 mt-1" />
                 <div className="flex-1">
                   <span className="text-sm font-semibold text-gray-900">Consent to eService</span>
-                  <p className="text-xs text-gray-600 mt-1">
-                    On behalf of myself/my client I consent to receiving electronic service from the Court 
-                    (This is not indicating consent to electronic service from other parties on the case.)
-                  </p>
+                  <p className="text-xs text-gray-600 mt-1">On behalf of myself/my client I consent to receiving electronic service from the Court (This is not indicating consent to electronic service from other parties on the case.)</p>
                 </div>
               </label>
-
-              {/* Address & Phone sections abbreviated for space */}
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="text-sm font-bold text-gray-900">Address #1</h4>
                 <div className="space-y-2">
@@ -941,27 +897,14 @@ const AddParty: React.FC = () => {
                   <input type="text" placeholder="City" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                 </div>
               </div>
-
               <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <h4 className="text-sm font-bold text-gray-900">Phone #1</h4>
                 <input type="tel" placeholder="Phone number" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
               </div>
             </div>
-
-            {/* Modal Footer */}
             <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-200">
-              <button
-                onClick={handleSaveAttorney}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCloseAttorneyModal}
-                className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-              >
-                Cancel
-              </button>
+              <button onClick={handleSaveAttorney} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Save</button>
+              <button onClick={handleCloseAttorneyModal} className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">Cancel</button>
             </div>
           </div>
         </div>
@@ -971,146 +914,59 @@ const AddParty: React.FC = () => {
       {showAKAModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-            {/* Modal Header */}
             <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-4 flex items-center justify-between border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-900">AKA / DBA #1</h3>
-              <button
-                onClick={handleCloseAKAModal}
-                className="p-1 hover:bg-white rounded transition"
-              >
+              <button onClick={handleCloseAKAModal} className="p-1 hover:bg-white rounded transition">
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
-
-            {/* Modal Body */}
             <div className="p-6 space-y-6">
-              {/* Party Designation Type */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Party Designation Type
-                </label>
-                <select
-                  value={akaForm.partyDesignationType === 'person' ? 'Person' : 'Organization / Single Name Party'}
-                  onChange={(e) => {
-                    const newType = e.target.value === 'Person' ? 'person' : 'organization';
-                    setAkaType(newType);
-                    setAkaForm({...akaForm, partyDesignationType: newType});
-                  }}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                >
+                <label className="block text-sm font-semibold text-gray-900">Party Designation Type</label>
+                <select value={akaForm.partyDesignationType === 'person' ? 'Person' : 'Organization / Single Name Party'} onChange={(e) => { const newType = e.target.value === 'Person' ? 'person' : 'organization'; setAkaType(newType); setAkaForm({...akaForm, partyDesignationType: newType}); }} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                   <option value="Person">Person</option>
                   <option value="Organization / Single Name Party">Organization / Single Name Party</option>
                 </select>
               </div>
-
-              {/* Type */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-900">
-                  Type<span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={akaForm.type}
-                  onChange={(e) => setAkaForm({...akaForm, type: e.target.value})}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
-                >
+                <label className="block text-sm font-semibold text-gray-900">Type<span className="text-red-500">*</span></label>
+                <select value={akaForm.type} onChange={(e) => setAkaForm({...akaForm, type: e.target.value})} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
                   <option value="Also Known As">Also Known As</option>
                   <option value="Doing Business As">Doing Business As</option>
                   <option value="Formerly Known As">Formerly Known As</option>
                 </select>
               </div>
-
-              {/* Conditional Fields based on Party Type */}
               {akaType === 'person' ? (
                 <>
-                  {/* First Name */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      First Name<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={akaForm.firstName}
-                      onChange={(e) => setAkaForm({...akaForm, firstName: e.target.value})}
-                      placeholder="Enter first name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900">First Name<span className="text-red-500">*</span></label>
+                    <input type="text" value={akaForm.firstName} onChange={(e) => setAkaForm({...akaForm, firstName: e.target.value})} placeholder="Enter first name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
-
-                  {/* Middle Name */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      Middle Name
-                    </label>
-                    <input
-                      type="text"
-                      value={akaForm.middleName}
-                      onChange={(e) => setAkaForm({...akaForm, middleName: e.target.value})}
-                      placeholder="Enter middle name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900">Middle Name</label>
+                    <input type="text" value={akaForm.middleName} onChange={(e) => setAkaForm({...akaForm, middleName: e.target.value})} placeholder="Enter middle name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
-
-                  {/* Last Name */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      Last Name<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={akaForm.lastName}
-                      onChange={(e) => setAkaForm({...akaForm, lastName: e.target.value})}
-                      placeholder="Enter last name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900">Last Name<span className="text-red-500">*</span></label>
+                    <input type="text" value={akaForm.lastName} onChange={(e) => setAkaForm({...akaForm, lastName: e.target.value})} placeholder="Enter last name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
-
-                  {/* Suffix */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      Suffix
-                    </label>
-                    <input
-                      type="text"
-                      value={akaForm.suffix}
-                      onChange={(e) => setAkaForm({...akaForm, suffix: e.target.value})}
-                      placeholder="Enter suffix (e.g., Jr., Sr., III)"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900">Suffix</label>
+                    <input type="text" value={akaForm.suffix} onChange={(e) => setAkaForm({...akaForm, suffix: e.target.value})} placeholder="Enter suffix (e.g., Jr., Sr., III)" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                 </>
               ) : (
                 <>
-                  {/* Organization Name */}
                   <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-900">
-                      Organization Name<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={akaForm.organizationName}
-                      onChange={(e) => setAkaForm({...akaForm, organizationName: e.target.value})}
-                      placeholder="Enter organization name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
-                    />
+                    <label className="block text-sm font-semibold text-gray-900">Organization Name<span className="text-red-500">*</span></label>
+                    <input type="text" value={akaForm.organizationName} onChange={(e) => setAkaForm({...akaForm, organizationName: e.target.value})} placeholder="Enter organization name" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
                   </div>
                 </>
               )}
             </div>
-
-            {/* Modal Footer */}
             <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-200">
-              <button
-                onClick={handleSaveAKA}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCloseAKAModal}
-                className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-              >
-                Cancel
-              </button>
+              <button onClick={handleSaveAKA} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Save</button>
+              <button onClick={handleCloseAKAModal} className="px-6 py-2.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium">Cancel</button>
             </div>
           </div>
         </div>
