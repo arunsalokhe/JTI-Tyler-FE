@@ -83,7 +83,7 @@ const DashboardPage: React.FC = () => {
                 navigate('/services/process-serving/case-info');
                 break;
             case 'JTI EFiling':
-                navigate('/services/jti-filing/new-case');
+                navigate('/services/jti-filing/home-page');
                 break;
             default:
                 console.log(`Selected service: ${serviceName}`);
@@ -93,13 +93,13 @@ const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-indigo-50">
             {/* Top Language Bar */}
-            <div className="bg-gray-900">
+            {/* <div className="bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1 flex justify-end">
                     <select className="bg-transparent text-gray-400 text-xs outline-none cursor-pointer">
                         <option>English</option>
                     </select>
                 </div>
-            </div>
+            </div> */}
 
             {/* Main Header */}
             <header className="bg-white border-b border-gray-200">

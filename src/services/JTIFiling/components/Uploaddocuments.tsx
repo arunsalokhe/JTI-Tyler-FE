@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, X, Upload, Trash2, FileText, AlertCircle } from 'lucide-react';
+import JTIHeader from './JTIHeader';
 
 interface Document {
     id: string;
@@ -116,30 +117,7 @@ const UploadDocuments: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition"
-                            >
-                                <ArrowLeft className="w-5 h-5 text-gray-600" />
-                            </button>
-                            <div>
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">JTI E-Filing</h1>
-                                <p className="text-sm text-gray-500">Upload documents for filing</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => navigate('/jti-filing/dashboard')}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition"
-                        >
-                            <X className="w-5 h-5 text-gray-600" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <JTIHeader />
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -249,7 +227,7 @@ const UploadDocuments: React.FC = () => {
                     <div className="flex items-center justify-between pt-6 border-t border-gray-200">
                         <button
                             onClick={handleAddDocument}
-                            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                            className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
                         >
                             <Upload className="w-5 h-5" />
                             Add Document
@@ -257,7 +235,7 @@ const UploadDocuments: React.FC = () => {
 
                         <button
                             onClick={handleCheckout}
-                            className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                            className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />

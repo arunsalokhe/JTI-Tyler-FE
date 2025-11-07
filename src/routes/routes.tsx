@@ -12,6 +12,7 @@ import AddParty from '../services/JTIFiling/components/AddParty.tsx';
 import AddPartyWithFiledAsTo from '../services/JTIFiling/components/AddPartyWithFiledAsTo.tsx';
 import UploadDocuments from '../services/JTIFiling/components/Uploaddocuments.tsx';
 import Checkout from '../services/JTIFiling/components/Checkout.tsx';
+import HomePage from '../services/JTIFiling/components/Jtihomepage.tsx';
 
 
 export const router = createBrowserRouter([
@@ -42,6 +43,10 @@ export const router = createBrowserRouter([
   {
     path: '/services/process-serving/order-details',
     element: <OrderDetails />,
+  },
+  {
+    path: '/services/jti-filing/home-page',
+    element: <HomePage />,
   },
   {
     path: '/services/jti-filing/new-case',

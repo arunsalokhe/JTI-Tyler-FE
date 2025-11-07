@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, X, Plus, Trash2 } from 'lucide-react';
+import JTIHeader from './JTIHeader';
 
 interface FiledAsToParty {
     id: string;
@@ -169,30 +170,7 @@ const AddParty: React.FC = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => navigate('/services/jti-filing/add-party')}
-                                className="p-2 hover:bg-gray-100 rounded-lg transition"
-                            >
-                                <ArrowLeft className="w-5 h-5 text-gray-600" />
-                            </button>
-                            <div>
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">JTI E-Filing</h1>
-                                <p className="text-sm text-gray-500">Add parties to the case</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => navigate('/services/jti-filing/add-party')}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition"
-                        >
-                            <X className="w-5 h-5 text-gray-600" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+            <JTIHeader />
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -364,7 +342,7 @@ const AddParty: React.FC = () => {
                                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
                                         <button
                                             onClick={() => handleAddAKA(party.id)}
-                                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+                                            className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
                                         >
                                             <Plus className="w-4 h-4" />
                                             Add AKA/DBA
@@ -372,11 +350,11 @@ const AddParty: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}                        
+                        ))}
                         <div className="flex items-center justify-between">
                             <button
                                 onClick={handleAddFiledAsToParty}
-                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                                className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
                             >
                                 <Plus className="w-5 h-5" />
                                 Another Party
@@ -384,7 +362,7 @@ const AddParty: React.FC = () => {
 
                             <button
                                 onClick={handleContinue}
-                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium shadow-sm"
+                                className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
                             >
                                 Continue
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -392,7 +370,7 @@ const AddParty: React.FC = () => {
                                 </svg>
                             </button>
                         </div>
-                    </div>                   
+                    </div>
                 </div>
             </main>
 
