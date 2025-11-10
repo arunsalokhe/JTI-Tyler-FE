@@ -40,7 +40,7 @@ const JTIHomepage: React.FC = () => {
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 sm:px-8 py-8 sm:py-12 border-b border-gray-200">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
-              Sample Homepage
+              Homepage
             </h1>
             <p className="text-base sm:text-lg text-gray-700 max-w-3xl">
               This portal site allows you to electronically file documents, search data and download 

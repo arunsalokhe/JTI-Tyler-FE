@@ -28,7 +28,7 @@ const JTIHeader: React.FC = () => {
               File a New Case
             </button>
             <button
-              onClick={() => navigate('/subsequent-filing')}
+              onClick={() => navigate('/services/jti-filing/subsequent-filing')}
               className="text-sm font-medium text-gray-900 hover:text-indigo-600 transition"
             >
               Subsequent Filing

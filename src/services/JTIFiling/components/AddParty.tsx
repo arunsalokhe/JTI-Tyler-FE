@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, X, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Plus, Trash2, X } from 'lucide-react';
 import JTIHeader from './JTIHeader';
+import { jtiFilingService } from '../jtiFilingService';
+import { ApiError } from '../apiConfig';
+import {
+  PartyType,
+  PartyDesignationType,
+  Language,
+  Country,
+  USState,
+  AKAType,
+} from '../../../types/jtiFilingTypes';
 
 interface Party {
   id: string;
@@ -11,7 +21,7 @@ interface Party {
     incompetentPerson: boolean;
     minor: boolean;
   };
-  type: 'person' | 'organization';
+  type: string;
   firstName?: string;
   middleName?: string;
   lastName?: string;
@@ -23,26 +33,63 @@ interface Party {
   feeExemptionType?: string;
   representingYourself: boolean;
   hasAttorney: boolean;
-  // Self-representation required fields
+  selfRepCountry?: string;
   selfRepAddress?: string;
+  selfRepAddress2?: string;
   selfRepCity?: string;
   selfRepState?: string;
   selfRepZip?: string;
   selfRepEmail?: string;
+  selfRepPhone?: string;
+  // ADD THIS: Array to store attorneys
+  attorneys?: Attorney[];
+}
+
+interface Attorney {
+  id: string;
+  barNumberSearch: string;
+  role: string;
+  type: string;
+  firm: string;
+  barNumber: string;
+  firstName: string;
+  middle: string;
+  lastName: string;
+  suffix: string;
+  email: string;
+  altEmail: string;
+  consentToEService: boolean;
 }
 
 const AddParty: React.FC = () => {
   const navigate = useNavigate();
-  const [parties, setParties] = useState<Party[]>([
+  const location = useLocation();
+  const caseData = location.state?.caseData;
+  const savedParties = location.state?.parties;
+
+  // API Data States
+  const [partyRoles, setPartyRoles] = useState<PartyType[]>([]);
+  const [partyDesignationTypes, setPartyDesignationTypes] = useState<PartyDesignationType[]>([]);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [usStates, setUSStates] = useState<USState[]>([]);
+  const [akaTypes, setAkaTypes] = useState<AKAType[]>([]);
+
+  // Loading States
+  const [loading, setLoading] = useState(true);
+  const [loadingPartyRoles, setLoadingPartyRoles] = useState(false);
+
+  // Initialize parties with saved data or default
+  const [parties, setParties] = useState<Party[]>(savedParties || [
     {
       id: '1',
-      role: 'Plaintiff',
+      role: '',
       partySubtype: {
         guardianAdLitem: false,
         incompetentPerson: false,
         minor: false
       },
-      type: 'person',
+      type: '',
       firstName: '',
       middleName: '',
       lastName: '',
@@ -52,11 +99,15 @@ const AddParty: React.FC = () => {
       filingFeesExemption: false,
       representingYourself: false,
       hasAttorney: false,
+      selfRepCountry: 'US',
       selfRepAddress: '',
+      selfRepAddress2: '',
       selfRepCity: '',
       selfRepState: '',
       selfRepZip: '',
-      selfRepEmail: ''
+      selfRepEmail: '',
+      selfRepPhone: '',
+      attorneys: [] // ADD THIS
     }
   ]);
 
@@ -64,7 +115,7 @@ const AddParty: React.FC = () => {
   const [showAttorneyModal, setShowAttorneyModal] = useState(false);
   const [showAKAModal, setShowAKAModal] = useState(false);
   const [currentPartyId, setCurrentPartyId] = useState<string>('');
-  const [akaType, setAkaType] = useState<'person' | 'organization'>('person');
+  const [akaPartyType, setAkaPartyType] = useState<string>('P'); // P or O
 
   // Attorney form state
   const [attorneyForm, setAttorneyForm] = useState({
@@ -84,8 +135,8 @@ const AddParty: React.FC = () => {
 
   // AKA form state
   const [akaForm, setAkaForm] = useState({
-    partyDesignationType: 'person',
-    type: 'Also Known As',
+    partyDesignationType: 'P',
+    type: '',
     firstName: '',
     middleName: '',
     lastName: '',
@@ -93,25 +144,92 @@ const AddParty: React.FC = () => {
     organizationName: ''
   });
 
-  const roles = [
-    'Plaintiff',
-    'Defendant',
-    'Petitioner',
-    'Respondent',
-    'Cross-Complainant',
-    'Cross-Defendant'
+  const feeExemptionTypes = [
+    { code: 'FW', name: 'Fee Waiver' },
+    { code: 'GE', name: 'Government Entity' }
   ];
+
+  useEffect(() => {
+    fetchInitialData();
+  }, []);
+
+  // Fetch party roles when case category changes
+  useEffect(() => {
+    if (caseData?.caseCategory) {
+      fetchPartyRoles(caseData.caseCategory);
+    }
+  }, [caseData?.caseCategory]);
+
+  /**
+   * Fetch all initial dropdown data
+   */
+  const fetchInitialData = async () => {
+    try {
+      setLoading(true);
+
+      const [
+        designationTypes,
+        languagesList,
+        countriesList,
+        statesList,
+        akaTypesList
+      ] = await Promise.all([
+        jtiFilingService.getPartyDesignationTypes(),
+        jtiFilingService.getLanguages(),
+        jtiFilingService.getCountries(),
+        jtiFilingService.getUSStates(),
+        jtiFilingService.getAKATypes(),
+      ]);
+
+      setPartyDesignationTypes(designationTypes);
+      setLanguages(languagesList);
+      setCountries(countriesList.filter(c => c.isActive));
+      setUSStates(statesList.filter(s => s.isActive));
+      setAkaTypes(akaTypesList.filter(t => t.isActive));
+
+    } catch (error) {
+      console.error('Error fetching initial data:', error);
+      if (error instanceof ApiError) {
+        alert(`Error loading form data: ${error.message}`);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Fetch party roles based on case category
+   */
+  const fetchPartyRoles = async (caseCategoryCode: string) => {
+    try {
+      setLoadingPartyRoles(true);
+      const data = await jtiFilingService.getPartyTypes(caseCategoryCode);
+      setPartyRoles(data.partyTypes || []);
+
+      // Set first party role if available
+      if (data.partyTypes && data.partyTypes.length > 0 && parties.length > 0) {
+        handlePartyChange(parties[0].id, 'role', data.partyTypes[0].code);
+      }
+    } catch (error) {
+      console.error('Error fetching party roles:', error);
+      if (error instanceof ApiError) {
+        alert(`Error loading party roles: ${error.message}`);
+      }
+    } finally {
+      setLoadingPartyRoles(false);
+    }
+  };
 
   const handleAddParty = () => {
     const newParty: Party = {
       id: Date.now().toString(),
-      role: 'Plaintiff',
+      role: partyRoles.length > 0 ? partyRoles[0].code : '',
       partySubtype: {
         guardianAdLitem: false,
         incompetentPerson: false,
         minor: false
       },
-      type: 'person',
+      type: partyDesignationTypes.length > 0 ? partyDesignationTypes[0].code : '',
       firstName: '',
       middleName: '',
       lastName: '',
@@ -121,11 +239,15 @@ const AddParty: React.FC = () => {
       filingFeesExemption: false,
       representingYourself: false,
       hasAttorney: false,
+      selfRepCountry: 'US',
       selfRepAddress: '',
+      selfRepAddress2: '',
       selfRepCity: '',
       selfRepState: '',
       selfRepZip: '',
-      selfRepEmail: ''
+      selfRepEmail: '',
+      selfRepPhone: '',
+      attorneys: []
     };
     setParties([...parties, newParty]);
   };
@@ -149,6 +271,17 @@ const AddParty: React.FC = () => {
             }
           };
         }
+
+        // ✅ ADD THIS: Auto-populate firstName/lastName for organizations
+        if (field === 'name' && party.type !== 'P') {
+          return {
+            ...party,
+            name: value,
+            firstName: value,  // ← Auto-set
+            lastName: value    // ← Auto-set
+          };
+        }
+
         return { ...party, [field]: value };
       }
       return party;
@@ -163,10 +296,10 @@ const AddParty: React.FC = () => {
   const handleAddAKA = (partyId: string) => {
     setCurrentPartyId(partyId);
     const party = parties.find(p => p.id === partyId);
-    setAkaType(party?.type || 'person');
+    setAkaPartyType(party?.type || 'P');
     setAkaForm({
       ...akaForm,
-      partyDesignationType: party?.type || 'person'
+      partyDesignationType: party?.type || 'P'
     });
     setShowAKAModal(true);
   };
@@ -192,8 +325,8 @@ const AddParty: React.FC = () => {
   const handleCloseAKAModal = () => {
     setShowAKAModal(false);
     setAkaForm({
-      partyDesignationType: 'person',
-      type: 'Also Known As',
+      partyDesignationType: 'P',
+      type: '',
       firstName: '',
       middleName: '',
       lastName: '',
@@ -208,18 +341,45 @@ const AddParty: React.FC = () => {
       return;
     }
 
-    // Mark that this party has an attorney
-    setParties(parties.map(party =>
-      party.id === currentPartyId ? { ...party, hasAttorney: true } : party
-    ));
+    // Create attorney object with unique ID
+    const newAttorney: Attorney = {
+      id: `attorney_${Date.now()}`,
+      ...attorneyForm
+    };
 
-    console.log('Saving attorney:', attorneyForm);
+    // Add attorney to the party's attorneys array
+    setParties(parties.map(party => {
+      if (party.id === currentPartyId) {
+        return {
+          ...party,
+          hasAttorney: true,
+          attorneys: [...(party.attorneys || []), newAttorney]
+        };
+      }
+      return party;
+    }));
+
+    console.log('Saving attorney:', newAttorney);
     handleCloseAttorneyModal();
     alert('Attorney added successfully!');
   };
 
+  const handleRemoveAttorney = (partyId: string, attorneyIndex: number) => {
+    setParties(parties.map(party => {
+      if (party.id === partyId) {
+        const updatedAttorneys = party.attorneys?.filter((_, idx) => idx !== attorneyIndex) || [];
+        return {
+          ...party,
+          attorneys: updatedAttorneys,
+          hasAttorney: updatedAttorneys.length > 0
+        };
+      }
+      return party;
+    }));
+  };
+
   const handleSaveAKA = () => {
-    if (akaType === 'person') {
+    if (akaPartyType === 'P') {
       if (!akaForm.firstName || !akaForm.lastName) {
         alert('Please fill in all required fields');
         return;
@@ -235,13 +395,24 @@ const AddParty: React.FC = () => {
     alert('AKA/DBA added successfully!');
   };
 
+  const handleBack = () => {
+    // Navigate back to NewCase page with current party data
+    navigate('/services/jti-filing/new-case', {
+      state: {
+        caseData,
+        parties // Save current party data
+      }
+    });
+  };
+
   const handleContinue = () => {
     // Validate basic party information
     const hasBasicInfo = parties.every(party => {
-      if (party.type === 'person') {
+      if (party.type === 'P') {
         return party.firstName && party.lastName;
       } else {
-        return party.name;
+        // For organization, check if name is filled (firstName/lastName are auto-populated)
+        return party.name || (party.firstName && party.lastName);
       }
     });
 
@@ -272,13 +443,31 @@ const AddParty: React.FC = () => {
     }
 
     console.log('Parties data:', parties);
-    navigate('/services/jti-filing/add-PartyWithFiledAsTo');
+    console.log('Case data from previous page:', caseData);
+
+    navigate('/services/jti-filing/add-PartyWithFiledAsTo', {
+      state: {
+        caseData,
+        parties
+      }
+    });
   };
 
   // Check if party needs representation
   const needsRepresentation = (party: Party) => {
     return !party.representingYourself && !party.hasAttorney;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading party information...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -314,13 +503,23 @@ const AddParty: React.FC = () => {
                   <select
                     value={party.role}
                     onChange={(e) => handlePartyChange(party.id, 'role', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
+                    disabled={loadingPartyRoles}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white disabled:bg-gray-100"
                   >
-                    {roles.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
+                    {loadingPartyRoles ? (
+                      <option>Loading roles...</option>
+                    ) : partyRoles.length === 0 ? (
+                      <option>No roles available</option>
+                    ) : (
+                      <>
+                        <option value="">Select role</option>
+                        {partyRoles.map((role) => (
+                          <option key={role.code} value={role.code}>
+                            {role.name}
+                          </option>
+                        ))}
+                      </>
+                    )}
                   </select>
                 </div>
 
@@ -366,17 +565,21 @@ const AddParty: React.FC = () => {
                     Type<span className="text-red-500">*</span>
                   </label>
                   <select
-                    value={party.type === 'person' ? 'Person' : 'Organization / Single Name Party'}
-                    onChange={(e) => handlePartyChange(party.id, 'type', e.target.value === 'Person' ? 'person' : 'organization')}
+                    value={party.type}
+                    onChange={(e) => handlePartyChange(party.id, 'type', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                   >
-                    <option value="Person">Person</option>
-                    <option value="Organization / Single Name Party">Organization / Single Name Party</option>
+                    <option value="">Select type</option>
+                    {partyDesignationTypes.map((type) => (
+                      <option key={type.code} value={type.code}>
+                        {type.name}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 {/* Conditional Fields based on Type */}
-                {party.type === 'person' ? (
+                {party.type === 'P' ? (
                   <>
                     <div className="space-y-2">
                       <label className="block text-sm font-semibold text-gray-900">
@@ -472,11 +675,11 @@ const AddParty: React.FC = () => {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                         >
                           <option value="">Select language</option>
-                          <option value="spanish">Spanish</option>
-                          <option value="mandarin">Mandarin</option>
-                          <option value="french">French</option>
-                          <option value="german">German</option>
-                          <option value="other">Other</option>
+                          {languages.map((lang) => (
+                            <option key={lang.code} value={lang.code}>
+                              {lang.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     )}
@@ -505,10 +708,11 @@ const AddParty: React.FC = () => {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                         >
                           <option value="">Select fee exemption type</option>
-                          <option value="indigent">Indigent Status</option>
-                          <option value="public-benefit">Public Benefit Recipient</option>
-                          <option value="low-income">Low Income</option>
-                          <option value="other">Other</option>
+                          {feeExemptionTypes.map((type) => (
+                            <option key={type.code} value={type.code}>
+                              {type.name}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     )}
@@ -539,9 +743,6 @@ const AddParty: React.FC = () => {
                         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-bold text-gray-900">Address #1</h4>
-                            <button className="p-1 hover:bg-gray-200 rounded transition">
-                              <Trash2 className="w-4 h-4 text-gray-600" />
-                            </button>
                           </div>
 
                           <div className="space-y-2">
@@ -549,11 +750,15 @@ const AddParty: React.FC = () => {
                               Country<span className="text-red-500">*</span>
                             </label>
                             <select
+                              value={party.selfRepCountry || 'US'}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepCountry', e.target.value)}
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                             >
-                              <option value="US">United States</option>
-                              <option value="CA">Canada</option>
-                              <option value="MX">Mexico</option>
+                              {countries.map((country) => (
+                                <option key={country.code} value={country.code}>
+                                  {country.name}
+                                </option>
+                              ))}
                             </select>
                           </div>
 
@@ -576,6 +781,8 @@ const AddParty: React.FC = () => {
                             </label>
                             <input
                               type="text"
+                              value={party.selfRepAddress2 || ''}
+                              onChange={(e) => handlePartyChange(party.id, 'selfRepAddress2', e.target.value)}
                               placeholder="Apartment, suite, etc."
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
                             />
@@ -604,10 +811,11 @@ const AddParty: React.FC = () => {
                               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white"
                             >
                               <option value="">Select state</option>
-                              <option value="CA">California</option>
-                              <option value="NY">New York</option>
-                              <option value="TX">Texas</option>
-                              <option value="FL">Florida</option>
+                              {usStates.map((state) => (
+                                <option key={state.code} value={state.code}>
+                                  {state.name}
+                                </option>
+                              ))}
                             </select>
                           </div>
 
@@ -625,21 +833,10 @@ const AddParty: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* <button
-                          type="button"
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Address
-                        </button> */}
-
                         {/* Phone Section */}
                         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-bold text-gray-900">Phone #1</h4>
-                            <button className="p-1 hover:bg-gray-200 rounded transition">
-                              <Trash2 className="w-4 h-4 text-gray-600" />
-                            </button>
                           </div>
 
                           <div className="space-y-2">
@@ -665,21 +862,10 @@ const AddParty: React.FC = () => {
                           </div>
                         </div>
 
-                        {/* <button
-                          type="button"
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Phone
-                        </button> */}
-
                         {/* Email Section */}
                         <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm font-bold text-gray-900">Email #1</h4>
-                            <button className="p-1 hover:bg-gray-200 rounded transition">
-                              <Trash2 className="w-4 h-4 text-gray-600" />
-                            </button>
                           </div>
 
                           <div className="space-y-2">
@@ -708,14 +894,6 @@ const AddParty: React.FC = () => {
                             />
                           </div>
                         </div>
-
-                        {/* <button
-                          type="button"
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition font-medium"
-                        >
-                          <Plus className="w-4 h-4" />
-                          Email
-                        </button> */}
 
                         {/* Consent to eService */}
                         <div className="space-y-2">
@@ -759,28 +937,61 @@ const AddParty: React.FC = () => {
                   </div>
 
                   {/* Status indicator */}
-                  {party.hasAttorney && (
-                    <p className="text-sm text-green-600 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      Attorney added
-                    </p>
+                  {party.attorneys && party.attorneys.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm font-semibold text-gray-900">Added Attorneys ({party.attorneys.length}):</p>
+                      {party.attorneys.map((attorney, idx) => (
+                        <div key={attorney.id} className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-900">
+                              {attorney.firstName} {attorney.middle && `${attorney.middle} `}{attorney.lastName} {attorney.suffix}
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {attorney.role} {attorney.firm && `• ${attorney.firm}`} • Bar: {attorney.barNumber}
+                            </p>
+                            <p className="text-xs text-gray-600">{attorney.email}</p>
+                            {attorney.consentToEService && (
+                              <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                                ✓ Consent to eService
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => handleRemoveAttorney(party.id, idx)}
+                            className="ml-3 text-red-600 hover:text-red-800 text-sm font-medium"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
             </div>
           ))}
 
-          {/* Add Another Party & Continue Buttons */}
+          {/* Add Another Party, Back & Continue Buttons */}
           <div className="flex items-center justify-between">
-            <button
-              onClick={handleAddParty}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              Another Party
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition shadow-sm"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Back
+              </button>
+
+              <button
+                onClick={handleAddParty}
+                className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
+              >
+                <Plus className="w-4 h-4" />
+                Another Party
+              </button>
+            </div>
 
             <button
               onClick={handleContinue}
@@ -795,7 +1006,6 @@ const AddParty: React.FC = () => {
         </div>
       </main>
 
-      {/* Modals remain exactly as they were in the original */}
       {/* Add Attorney Modal */}
       {showAttorneyModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
@@ -868,17 +1078,6 @@ const AddParty: React.FC = () => {
                   <p className="text-xs text-gray-600 mt-1">On behalf of myself/my client I consent to receiving electronic service from the Court (This is not indicating consent to electronic service from other parties on the case.)</p>
                 </div>
               </label>
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-bold text-gray-900">Address #1</h4>
-                <div className="space-y-2">
-                  <input type="text" placeholder="Street address" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                  <input type="text" placeholder="City" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-                </div>
-              </div>
-              <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <h4 className="text-sm font-bold text-gray-900">Phone #1</h4>
-                <input type="tel" placeholder="Phone number" className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" />
-              </div>
             </div>
             <div className="bg-gray-50 px-6 py-4 flex items-center justify-end gap-3 border-t border-gray-200">
               <button onClick={handleSaveAttorney} className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">Save</button>
@@ -901,20 +1100,38 @@ const AddParty: React.FC = () => {
             <div className="p-6 space-y-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">Party Designation Type</label>
-                <select value={akaForm.partyDesignationType === 'person' ? 'Person' : 'Organization / Single Name Party'} onChange={(e) => { const newType = e.target.value === 'Person' ? 'person' : 'organization'; setAkaType(newType); setAkaForm({ ...akaForm, partyDesignationType: newType }); }} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                  <option value="Person">Person</option>
-                  <option value="Organization / Single Name Party">Organization / Single Name Party</option>
+                <select
+                  value={akaForm.partyDesignationType}
+                  onChange={(e) => {
+                    const newType = e.target.value;
+                    setAkaPartyType(newType);
+                    setAkaForm({ ...akaForm, partyDesignationType: newType });
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                >
+                  {partyDesignationTypes.map((type) => (
+                    <option key={type.code} value={type.code}>
+                      {type.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-900">Type<span className="text-red-500">*</span></label>
-                <select value={akaForm.type} onChange={(e) => setAkaForm({ ...akaForm, type: e.target.value })} className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
-                  <option value="Also Known As">Also Known As</option>
-                  <option value="Doing Business As">Doing Business As</option>
-                  <option value="Formerly Known As">Formerly Known As</option>
+                <select
+                  value={akaForm.type}
+                  onChange={(e) => setAkaForm({ ...akaForm, type: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                >
+                  <option value="">Select AKA type</option>
+                  {akaTypes.map((type) => (
+                    <option key={type.code} value={type.code}>
+                      {type.name}
+                    </option>
+                  ))}
                 </select>
               </div>
-              {akaType === 'person' ? (
+              {akaPartyType === 'P' ? (
                 <>
                   <div className="space-y-2">
                     <label className="block text-sm font-semibold text-gray-900">First Name<span className="text-red-500">*</span></label>

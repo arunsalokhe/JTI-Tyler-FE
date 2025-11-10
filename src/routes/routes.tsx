@@ -13,6 +13,7 @@ import AddPartyWithFiledAsTo from '../services/JTIFiling/components/AddPartyWith
 import UploadDocuments from '../services/JTIFiling/components/Uploaddocuments.tsx';
 import Checkout from '../services/JTIFiling/components/Checkout.tsx';
 import HomePage from '../services/JTIFiling/components/Jtihomepage.tsx';
+import SubsequentPage from '../services/JTIFiling/components/SubsequentFiling.tsx';
 
 
 export const router = createBrowserRouter([
@@ -67,6 +68,10 @@ export const router = createBrowserRouter([
   {
     path: '/services/jti-filing/checkout',
     element: <Checkout />,
+  },
+    {
+    path: '/services/jti-filing/subsequent-filing',
+    element: <SubsequentPage />,
   },
   {
     path: "/tyler-filing/*",

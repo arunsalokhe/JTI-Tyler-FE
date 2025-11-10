@@ -1,88 +1,204 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, X, RotateCcw, Info } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { RotateCcw, Info } from 'lucide-react';
 import JTIHeader from './JTIHeader';
-
-interface CaseType {
-  id: string;
-  name: string;
-}
-
-interface CaseCategory {
-  id: string;
-  name: string;
-}
+import { jtiFilingService } from '../jtiFilingService';
+import { ApiError } from '../apiConfig';
+import {
+  CaseType,
+  CaseCategory,
+  JurisdictionalAmount,
+  CaseFormData,
+} from '../../../types/jtiFilingTypes';
 
 const NewCase: React.FC = () => {
   const navigate = useNavigate();
-  const [eFilingTitle, setEFilingTitle] = useState<string>('');
-  const [caseType, setCaseType] = useState<string>('');
-  const [caseCategory, setCaseCategory] = useState<string>('');
-  const [jurisdictionalAmount, setJurisdictionalAmount] = useState<string>('');
-  const [demandAmount, setDemandAmount] = useState<string>('');
+  const location = useLocation();
+  
+  // Check if we have saved data from previous navigation
+  const savedCaseData = location.state?.caseData;
+  const savedParties = location.state?.parties;
+  
+  // Form state - Initialize with saved data if available
+  const [formData, setFormData] = useState<CaseFormData>({
+    eFilingTitle: savedCaseData?.eFilingTitle || '',
+    caseType: savedCaseData?.caseType || '',
+    caseCategory: savedCaseData?.caseCategory || '',
+    jurisdictionalAmount: savedCaseData?.jurisdictionalAmount || '',
+    demandAmount: savedCaseData?.demandAmount || '',
+  });
+
+  // Store full objects with code and name
+  const [selectedCaseType, setSelectedCaseType] = useState<{code: string, name: string} | null>(
+    savedCaseData?.selectedCaseType || null
+  );
+  const [selectedCaseCategory, setSelectedCaseCategory] = useState<{code: string, name: string} | null>(
+    savedCaseData?.selectedCaseCategory || null
+  );
+  const [selectedJurisdictionalAmount, setSelectedJurisdictionalAmount] = useState<{code: string, name: string} | null>(
+    savedCaseData?.selectedJurisdictionalAmount || null
+  );
+  
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Data state
   const [caseTypes, setCaseTypes] = useState<CaseType[]>([]);
   const [caseCategories, setCaseCategories] = useState<CaseCategory[]>([]);
+  const [jurisdictionalAmounts, setJurisdictionalAmounts] = useState<JurisdictionalAmount[]>([]);
+  
+  // Loading state
   const [loading, setLoading] = useState(true);
+  const [loadingDependentData, setLoadingDependentData] = useState(false);
 
   useEffect(() => {
-    fetchCaseData();
+    fetchCaseTypes();
   }, []);
 
-  const fetchCaseData = async () => {
+  // Restore dependent data when navigating back
+  useEffect(() => {
+    if (savedCaseData?.caseType) {
+      handleCaseTypeChange(savedCaseData.caseType);
+    }
+  }, [savedCaseData]);
+
+  /**
+   * Fetch case types on component mount
+   */
+  const fetchCaseTypes = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual API calls
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      setCaseTypes([
-        { id: 'civil-limited', name: 'Civil Limited' },
-        { id: 'civil-unlimited', name: 'Civil Unlimited' },
-        { id: 'small-claims', name: 'Small Claims' },
-        { id: 'family-law', name: 'Family Law' },
-        { id: 'probate', name: 'Probate' }
-      ]);
-
-      setCaseCategories([
-        { id: 'personal-injury', name: 'Personal Injury' },
-        { id: 'contract-dispute', name: 'Contract Dispute' },
-        { id: 'property-damage', name: 'Property Damage' },
-        { id: 'employment', name: 'Employment' },
-        { id: 'other', name: 'Other' }
-      ]);
+      const data = await jtiFilingService.getCaseTypes();
+      console.log('Case Types data:', data);
+      setCaseTypes(data.caseTypes || []);
     } catch (error) {
-      console.error('Error fetching case data:', error);
+      if (error instanceof ApiError) {
+        setErrors({ general: error.message });
+      } else {
+        setErrors({ general: 'Failed to load case types. Please refresh the page.' });
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReset = () => {
-    setEFilingTitle('');
-    setCaseType('');
-    setCaseCategory('');
-    setJurisdictionalAmount('');
-    setDemandAmount('');
-    setErrors({});
+  /**
+   * Handle case type change and fetch dependent data
+   */
+  const handleCaseTypeChange = async (value: string) => {
+    // Find the selected case type object
+    const selectedType = caseTypes.find(type => type.code === value);
+    setSelectedCaseType(selectedType || null);
+
+    // Update form data
+    setFormData({
+      ...formData,
+      caseType: value,
+      caseCategory: '',
+      jurisdictionalAmount: '',
+      demandAmount: '', // Clear demand amount when case type changes
+    });
+
+    // Clear dependent selections
+    setSelectedCaseCategory(null);
+    setSelectedJurisdictionalAmount(null);
+
+    // Clear errors
+    if (errors.caseType) {
+      setErrors({ ...errors, caseType: '' });
+    }
+
+    // Reset dependent data
+    setCaseCategories([]);
+    setJurisdictionalAmounts([]);
+
+    if (!value) return;
+
+    // Fetch both categories and jurisdictional amounts in parallel
+    try {
+      setLoadingDependentData(true);
+      
+      const { categories, amounts } = await jtiFilingService.getCaseDependentData(value);
+      console.log('Case categories and  amounts:', categories,amounts);
+      setCaseCategories(categories.relatedCategories || []);
+      setJurisdictionalAmounts(amounts || []);
+    } catch (error) {
+      if (error instanceof ApiError) {
+        setErrors({
+          ...errors,
+          caseCategory: 'Failed to load case categories.',
+          jurisdictionalAmount: 'Failed to load jurisdictional amounts.',
+        });
+      }
+    } finally {
+      setLoadingDependentData(false);
+    }
   };
 
+  /**
+   * Handle input change
+   */
+  const handleInputChange = (field: keyof CaseFormData, value: string) => {
+    setFormData({ ...formData, [field]: value });
+
+    // Handle case category selection
+    if (field === 'caseCategory') {
+      const selectedCategory = caseCategories.find(cat => cat.code === value);
+      setSelectedCaseCategory(selectedCategory || null);
+    }
+
+    // Handle jurisdictional amount selection
+    if (field === 'jurisdictionalAmount') {
+      const selectedAmount = jurisdictionalAmounts.find(amt => amt.code === value);
+      setSelectedJurisdictionalAmount(selectedAmount || null);
+    }
+    
+    // Clear error for this field
+    if (errors[field]) {
+      const newErrors = { ...errors };
+      delete newErrors[field];
+      setErrors(newErrors);
+    }
+  };
+
+  /**
+   * Reset form to initial state
+   */
+  const handleReset = () => {
+    setFormData({
+      eFilingTitle: '',
+      caseType: '',
+      caseCategory: '',
+      jurisdictionalAmount: '',
+      demandAmount: '',
+    });
+    setSelectedCaseType(null);
+    setSelectedCaseCategory(null);
+    setSelectedJurisdictionalAmount(null);
+    setErrors({});
+    setCaseCategories([]);
+    setJurisdictionalAmounts([]);
+  };
+
+  /**
+   * Validate form before submission
+   */
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!eFilingTitle.trim()) {
+    if (!formData.eFilingTitle.trim()) {
       newErrors.eFilingTitle = 'eFiling Title is required';
     }
 
-    if (!caseType) {
+    if (!formData.caseType) {
       newErrors.caseType = 'Case Type is required';
     }
 
-    if (!caseCategory) {
+    if (!formData.caseCategory) {
       newErrors.caseCategory = 'Case Category is required';
     }
 
-    if (!jurisdictionalAmount.trim()) {
+    // Only validate jurisdictional amount if it's available for this case type
+    if (jurisdictionalAmounts.length > 0 && !formData.jurisdictionalAmount) {
       newErrors.jurisdictionalAmount = 'Jurisdictional Amount is required';
     }
 
@@ -90,23 +206,34 @@ const NewCase: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  /**
+   * Handle form submission
+   */
   const handleContinue = () => {
     if (!validateForm()) {
       return;
     }
 
-    console.log('Case Data:', {
-      eFilingTitle,
-      caseType,
-      caseCategory,
-      jurisdictionalAmount,
-      demandAmount
-    });
+    // Prepare complete case data with both codes and names
+    const completeCaseData = {
+      ...formData,
+      selectedCaseType,
+      selectedCaseCategory,
+      selectedJurisdictionalAmount,
+    };
 
-    // Navigate to Add Party page
-    navigate('/services/jti-filing/add-party');
+    console.log('Case Data:', completeCaseData);
+
+    // Navigate to Add Party page with case data and any existing party data
+    navigate('/services/jti-filing/add-party', {
+      state: { 
+        caseData: completeCaseData,
+        parties: savedParties // Pass along saved party data if returning from AddParty
+      }
+    });
   };
 
+  // Show loading spinner while fetching initial data
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -123,36 +250,10 @@ const NewCase: React.FC = () => {
       {/* Header */}
       <JTIHeader />
 
-      {/* Page Title Section */}
-      {/* <div className="bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => navigate('/services/jti-filing/home-page')}
-                className="p-2 hover:bg-gray-100 rounded-lg transition"
-              >
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
-              </button>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">JTI E-Filing</h1>
-                <p className="text-sm text-gray-500">Create new case filing</p>
-              </div>
-            </div>
-            <button
-              onClick={() => navigate('/services/jti-filing/home-page')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition"
-            >
-              <X className="w-5 h-5 text-gray-600" />
-            </button>
-          </div>
-        </div>
-      </div> */}
-
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-          {/* Edit Case Header */}
+          {/* Page Header */}
           <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -170,6 +271,18 @@ const NewCase: React.FC = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-6">
+            {/* General Error Message */}
+            {errors.general && (
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-red-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm text-red-800">{errors.general}</p>
+                </div>
+              </div>
+            )}
+
             {/* eFiling Title */}
             <div className="space-y-2">
               <label className="flex items-center gap-2 text-sm font-semibold text-gray-900">
@@ -179,21 +292,17 @@ const NewCase: React.FC = () => {
               </label>
               <input
                 type="text"
-                value={eFilingTitle}
-                onChange={(e) => {
-                  setEFilingTitle(e.target.value);
-                  if (errors.eFilingTitle) {
-                    setErrors({ ...errors, eFilingTitle: '' });
-                  }
-                }}
+                value={formData.eFilingTitle}
+                onChange={(e) => handleInputChange('eFilingTitle', e.target.value)}
                 placeholder="Enter eFiling title"
-                className={`w-full px-4 py-3 border ${errors.eFilingTitle ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition`}
+                className={`w-full px-4 py-3 border ${
+                  errors.eFilingTitle ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition`}
               />
               {errors.eFilingTitle && (
                 <p className="text-sm text-red-500 mt-1">{errors.eFilingTitle}</p>
               )}
-              {!errors.eFilingTitle && !eFilingTitle && (
+              {!errors.eFilingTitle && !formData.eFilingTitle && (
                 <p className="text-sm text-red-500 mt-1">Required</p>
               )}
             </div>
@@ -204,19 +313,15 @@ const NewCase: React.FC = () => {
                 Case Type<span className="text-red-500">*</span>
               </label>
               <select
-                value={caseType}
-                onChange={(e) => {
-                  setCaseType(e.target.value);
-                  if (errors.caseType) {
-                    setErrors({ ...errors, caseType: '' });
-                  }
-                }}
-                className={`w-full px-4 py-3 border ${errors.caseType ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white`}
+                value={formData.caseType}
+                onChange={(e) => handleCaseTypeChange(e.target.value)}
+                className={`w-full px-4 py-3 border ${
+                  errors.caseType ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white`}
               >
                 <option value="">Select case type</option>
                 {caseTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
+                  <option key={type.code} value={type.code}>
                     {type.name}
                   </option>
                 ))}
@@ -232,19 +337,24 @@ const NewCase: React.FC = () => {
                 Case Category<span className="text-red-500">*</span>
               </label>
               <select
-                value={caseCategory}
-                onChange={(e) => {
-                  setCaseCategory(e.target.value);
-                  if (errors.caseCategory) {
-                    setErrors({ ...errors, caseCategory: '' });
-                  }
-                }}
-                className={`w-full px-4 py-3 border ${errors.caseCategory ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white`}
+                value={formData.caseCategory}
+                onChange={(e) => handleInputChange('caseCategory', e.target.value)}
+                disabled={!formData.caseType || loadingDependentData}
+                className={`w-full px-4 py-3 border ${
+                  errors.caseCategory ? 'border-red-500' : 'border-gray-300'
+                } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white disabled:bg-gray-100 disabled:cursor-not-allowed`}
               >
-                <option value="">Select case category</option>
+                <option value="">
+                  {loadingDependentData
+                    ? 'Loading categories...'
+                    : !formData.caseType
+                    ? 'Select case type first'
+                    : caseCategories.length === 0
+                    ? 'No categories available'
+                    : 'Select case category'}
+                </option>
                 {caseCategories.map((category) => (
-                  <option key={category.id} value={category.id}>
+                  <option key={category.code} value={category.code}>
                     {category.name}
                   </option>
                 ))}
@@ -252,56 +362,79 @@ const NewCase: React.FC = () => {
               {errors.caseCategory && (
                 <p className="text-sm text-red-500 mt-1">{errors.caseCategory}</p>
               )}
-            </div>
-
-            {/* Jurisdictional Amount */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                Jurisdictional Amnt<span className="text-red-500">*</span>
-              </label>
-              <select
-                value={jurisdictionalAmount}
-                onChange={(e) => {
-                  setJurisdictionalAmount(e.target.value);
-                  if (errors.jurisdictionalAmount) {
-                    setErrors({ ...errors, jurisdictionalAmount: '' });
-                  }
-                }}
-                className={`w-full px-4 py-3 border ${errors.jurisdictionalAmount ? 'border-red-500' : 'border-gray-300'
-                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white`}
-              >
-                <option value="">Select jurisdictional amount</option>
-                <option value="0-10000">$0 - $10,000</option>
-                <option value="10001-25000">$10,001 - $25,000</option>
-                <option value="25001-50000">$25,001 - $50,000</option>
-                <option value="50001-100000">$50,001 - $100,000</option>
-                <option value="100001-unlimited">Over $100,000</option>
-              </select>
-              {errors.jurisdictionalAmount && (
-                <p className="text-sm text-red-500 mt-1">{errors.jurisdictionalAmount}</p>
+              {loadingDependentData && formData.caseType && (
+                <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                  <div className="animate-spin rounded-full h-3 w-3 border-2 border-indigo-600 border-t-transparent"></div>
+                  Loading case categories...
+                </p>
               )}
             </div>
 
-            {/* Demand Amount */}
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-gray-900">
-                Demand Amnt
-              </label>
-              <input
-                type="text"
-                value={demandAmount}
-                onChange={(e) => setDemandAmount(e.target.value)}
-                placeholder="Enter demand amount (optional)"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
-              />
-            </div>
+            {/* Info message when jurisdictional amounts are not available */}
+            {(formData.caseType && !loadingDependentData && jurisdictionalAmounts.length === 0) && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <p className="text-sm text-blue-800">
+                      Jurisdictional amount and demand amount are not required for this case type.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Jurisdictional Amount - Only show if available for this case type */}
+            {(formData.caseType && !loadingDependentData && jurisdictionalAmounts.length > 0) && (
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Jurisdictional Amnt<span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.jurisdictionalAmount}
+                  onChange={(e) => handleInputChange('jurisdictionalAmount', e.target.value)}
+                  className={`w-full px-4 py-3 border ${
+                    errors.jurisdictionalAmount ? 'border-red-500' : 'border-gray-300'
+                  } rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition bg-white`}
+                >
+                  <option value="">Select jurisdictional amount</option>
+                  {jurisdictionalAmounts.map((amount) => (
+                    <option key={amount.code} value={amount.code}>
+                      {amount.name}
+                    </option>
+                  ))}
+                </select>
+                {errors.jurisdictionalAmount && (
+                  <p className="text-sm text-red-500 mt-1">{errors.jurisdictionalAmount}</p>
+                )}
+              </div>
+            )}
+
+            {/* Demand Amount - Only show if jurisdictional amounts are available */}
+            {(formData.caseType && !loadingDependentData && jurisdictionalAmounts.length > 0) && (
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-900">
+                  Demand Amnt
+                </label>
+                <input
+                  type="text"
+                  value={formData.demandAmount || ''}
+                  onChange={(e) => handleInputChange('demandAmount', e.target.value)}
+                  placeholder="Enter demand amount (optional)"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                />
+              </div>
+            )}
           </div>
 
           {/* Footer Actions */}
           <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-end rounded-b-xl">
             <button
               onClick={handleContinue}
-              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm"
+              disabled={loadingDependentData}
+              className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Continue
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,7 +448,11 @@ const NewCase: React.FC = () => {
         <div className="mt-6 flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex-shrink-0 mt-0.5">
             <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <div className="flex-1">
