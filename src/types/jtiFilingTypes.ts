@@ -274,6 +274,29 @@ export interface GetCaseResponse {
   queriedAt: string;
 }
 
+// ============== Codelist API Types ==============
+
+export interface CodelistRelationship {
+  relatedListName: string;
+  relatedCode: string;
+}
+
+export interface CodelistItem {
+  code: string;
+  name: string;
+  description: string;
+  relationships?: CodelistRelationship[];
+  hasRelationships?: boolean;
+}
+
+export interface CodelistResponse {
+  code: string;
+  name: string;
+  description: string;
+  relationships?: CodelistRelationship[];
+  hasRelationships?: boolean;
+}
+
 // ============== Helper function to map API data to app format ==============
 
 export const mapGetCaseDataToAppFormat = (apiData: GetCaseData) => {

@@ -14,6 +14,10 @@ import UploadDocuments from '../services/JTIFiling/components/Uploaddocuments.ts
 import Checkout from '../services/JTIFiling/components/Checkout.tsx';
 import HomePage from '../services/JTIFiling/components/Jtihomepage.tsx';
 import SubsequentPage from '../services/JTIFiling/components/SubsequentFiling.tsx';
+import SubsequentCase from '../services/JTIFiling/components/SubsequentCase.tsx';
+import SubsequentParty from '../services/JTIFiling/components/SubsequentParty.tsx';
+import SubsequentDocument from '@/services/JTIFiling/components/Subsequentdocument.tsx';
+import SubsequentCheckout from '@/services/JTIFiling/components/SubsequentCheckout.tsx';
 
 
 export const router = createBrowserRouter([
@@ -69,9 +73,25 @@ export const router = createBrowserRouter([
     path: '/services/jti-filing/checkout',
     element: <Checkout />,
   },
-    {
+  {
     path: '/services/jti-filing/subsequent-filing',
     element: <SubsequentPage />,
+  },
+  {
+    path: '/services/jti-filing/subsequent-case',
+    element: <SubsequentCase />,
+  },
+  {
+    path: '/services/jti-filing/subsequent-party',
+    element: <SubsequentParty />,
+  },
+  {
+    path: '/services/jti-filing/subsequent-documents',
+    element: <SubsequentDocument />,
+  },
+  {
+    path: '/services/jti-filing/subsequent-checkout',
+    element: <SubsequentCheckout />,
   },
   {
     path: "/tyler-filing/*",

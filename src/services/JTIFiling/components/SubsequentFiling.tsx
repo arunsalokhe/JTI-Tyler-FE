@@ -40,23 +40,36 @@ const SubsequentFiling: React.FC = () => {
     setApiError('');
 
     try {
-      // Make API call to search case
-      const response = await caseService.getCase(caseNumber.trim());
+      // Make API call to search case with enriched names
+      const response = await caseService.getCaseWithNames(caseNumber.trim());
 
       if (response.success && response.data) {
         console.log('Case found:', response);
+        console.log('Enriched data:', response.enrichedData);
 
         // Map API data to app format
         const mappedData = mapGetCaseDataToAppFormat(response.data);
 
         // Navigate to NewCase page with pre-populated data (read-only mode for subsequent filing)
-        navigate('/services/jti-filing/new-case', {
+        navigate('/services/jti-filing/subsequent-case', {
           state: { 
             ...mappedData.caseData,
+            // Add enriched names
+            selectedCaseType: {
+              code: response.data.caseDetails.caseType,
+              name: response.enrichedData?.caseTypeName || response.data.caseDetails.caseType,
+              description: response.enrichedData?.caseTypeDescription || '',
+            },
+            selectedCaseCategory: {
+              code: response.data.caseDetails.caseCategory,
+              name: response.enrichedData?.caseCategoryName || response.data.caseDetails.caseCategory,
+              description: response.enrichedData?.caseCategoryDescription || '',
+            },
             isSubsequentFiling: true,
             subsequentFilingData: {
               ...mappedData,
               rawApiData: response.data,
+              enrichedData: response.enrichedData,
             },
           }
         });

@@ -4,7 +4,7 @@
  */
 
 export const API_CONFIG = {
-  BASE_URL: 'https://localhost:7207/api',
+  BASE_URL: 'http://192.168.1.49:8022/api',
   //BASE_URL: 'https://localhost:7207/api', 
   ENDPOINTS: {
     MADERA_COURT: {
@@ -24,10 +24,16 @@ export const API_CONFIG = {
     },
     // Filing submission endpoint
     FILING: {
-      SUBMIT_CIVIL_FILING: (userName: string, password: string) => 
+      SUBMIT_CIVIL_FILING: (userName: string, password: string) =>
         `/Dynamiccivilfiling/SubmitCivilFilingnew_Final_Dynamic?userName=${userName}&password=${encodeURIComponent(password)}`,
+      SUBMIT_SUBSEQUENT_FILING: (username: string, password: string) =>
+        `/Dynamiccivilfiling/SubmitSubsequentFiling?userName=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`,
       GET_CASE: (userName: string, password: string) =>
         `/CaseList/GetCase?userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`,
+    },
+    CODELIST: {
+      GET_CASE_TYPE: (code: string) => `/MaderaCourt/codelist/case-type/${code}`,
+      GET_CASE_CATEGORY: (code: string) => `/MaderaCourt/codelist/case-category/${code}`,
     },
   },
   HEADERS: {
