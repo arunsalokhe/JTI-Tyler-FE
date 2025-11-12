@@ -35,7 +35,7 @@ const JTIHomepage: React.FC = () => {
       <JTIHeader />
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <main className="pt-24 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Hero Section */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 sm:px-8 py-8 sm:py-12 border-b border-gray-200">
@@ -43,7 +43,7 @@ const JTIHomepage: React.FC = () => {
               Homepage
             </h1>
             <p className="text-base sm:text-lg text-gray-700 max-w-3xl">
-              This portal site allows you to electronically file documents, search data and download 
+              This portal site allows you to electronically file documents, search data and download
               documents from a target eCourt.
             </p>
           </div>
@@ -52,7 +52,7 @@ const JTIHomepage: React.FC = () => {
           <div className="p-6 sm:p-8">
             <div className="bg-gray-50 rounded-lg border border-gray-200 p-6">
               <h2 className="text-xl font-bold text-gray-900 mb-6">About the Project</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {features.map((feature, index) => {
                   const Icon = feature.icon;
@@ -79,7 +79,7 @@ const JTIHomepage: React.FC = () => {
 
               <div className="mt-6 flex items-center justify-start">
                 <button
-                  onClick={() => {/* Navigate to more info */}}
+                  onClick={() => {/* Navigate to more info */ }}
                   className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-1 transition"
                 >
                   more...
@@ -101,17 +101,17 @@ const JTIHomepage: React.FC = () => {
             </h3>
             <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
               Attorney service companies wishing to take part in the project can contact{' '}
-              <a
-                href="mailto:efile@countrywide.com"
-                className="text-indigo-600 hover:text-indigo-700 font-medium underline"
-              >
+
+              href="mailto:efile@countrywide.com"
+              className="text-indigo-600 hover:text-indigo-700 font-medium underline"
+              <a>
                 efile@countrywide.com
               </a>{' '}
               or call{' '}
-              <a
-                href="tel:0001115555"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
-              >
+
+              href="tel:0001115555"
+              className="text-indigo-600 hover:text-indigo-700 font-medium"
+              <a>
                 (000) 111-5555
               </a>{' '}
               Option 2.
@@ -124,7 +124,7 @@ const JTIHomepage: React.FC = () => {
               Law Firms
             </h3>
             <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-              Law firms wishing to participate in the project can now register online by creating 
+              Law firms wishing to participate in the project can now register online by creating
               an account without contacting Journal Technologies.
             </p>
           </div>
@@ -135,7 +135,7 @@ const JTIHomepage: React.FC = () => {
               Self-Represented
             </h3>
             <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
-              Self-Represented parties can now register online by creating an account without 
+              Self-Represented parties can now register online by creating an account without
               contacting Journal Technologies.
             </p>
           </div>
@@ -174,6 +174,7 @@ const JTIHomepage: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-medium text-gray-500">Need Help?</p>
+
               <a
                 href="tel:8004584575"
                 className="text-sm font-semibold text-gray-900 hover:text-indigo-600"
@@ -188,6 +189,7 @@ const JTIHomepage: React.FC = () => {
             </div>
             <div>
               <p className="text-xs font-medium text-gray-500">Email Support</p>
+
               <a
                 href="mailto:efile@countrywide.com"
                 className="text-sm font-semibold text-gray-900 hover:text-indigo-600"

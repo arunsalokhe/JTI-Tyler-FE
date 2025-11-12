@@ -102,7 +102,7 @@ const DashboardPage: React.FC = () => {
             </div> */}
 
             {/* Main Header */}
-            <header className="bg-white border-b border-gray-200">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
@@ -174,7 +174,7 @@ const DashboardPage: React.FC = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+            <main className="pt-20 lg:pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
                     {/* LEFT COLUMN */}
                     <div className="lg:col-span-4 space-y-4 sm:space-y-6">

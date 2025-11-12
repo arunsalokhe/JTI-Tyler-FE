@@ -181,7 +181,7 @@ const SubsequentCase: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             <JTIHeader />
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+            <main className="pt-24 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200">
                     {/* Page Header */}
                     <div className="bg-gradient-to-r from-indigo-50 to-blue-50 px-6 py-6 border-b border-gray-200">

@@ -338,7 +338,7 @@ const SubsequentCheckout: React.FC = () => {
         return (
             <div className="min-h-screen bg-gray-50">
                 <JTIHeader />
-                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+                <main className="pt-24 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
                         <div className="flex items-start space-x-3">
                             <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
