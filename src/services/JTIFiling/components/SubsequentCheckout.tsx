@@ -14,6 +14,39 @@ interface SubsequentCaseData {
     filedDate: string;
 }
 
+interface RawApiData {
+    caseDetails?: {
+        caseTrackingId?: string;
+        caseDocketId?: string;
+        caseTitle?: string;
+        caseCategory?: string;
+        caseType?: string;
+        caseStatus?: string;
+        statusDescription?: string;
+        filedDate?: string;
+        courtName?: string;
+    };
+    attorneys?: any[];
+    parties?: any[];
+    docketEntries?: any[];
+    otherEntities?: any[];
+    incidentAddress?: any;
+    relatedCaseAssignments?: any[];
+}
+
+interface SubsequentFilingData {
+    caseData?: SubsequentCaseData;
+    filedByParties?: Party[];
+    filedAsToParties?: Party[];
+    rawApiData?: RawApiData;
+    enrichedData?: {
+        caseTypeName?: string;
+        caseTypeDescription?: string;
+        caseCategoryName?: string;
+        caseCategoryDescription?: string;
+    };
+}
+
 interface Party {
     id: string;
     participantRefId: string;
@@ -27,6 +60,14 @@ interface Party {
     name?: string;
     hasAttorney?: boolean;
     attorneys?: Attorney[];
+    representingYourself?: boolean;
+    selfRepAddress?: string;
+    selfRepAddress2?: string;
+    selfRepCity?: string;
+    selfRepState?: string;
+    selfRepZip?: string;
+    selfRepCountry?: string;
+    selfRepEmail?: string;
 }
 
 interface Attorney {
@@ -53,15 +94,26 @@ interface DocumentData {
     fileName: string;
     fileSize?: number;
     fileType?: string;
+    efmRequiresSubCase?: boolean;
+    subCaseId?: string;
+    metadata?: DocumentMetadata[];
+}
+
+interface DocumentMetadata {
+    code: string;
+    name: string;
+    description: string;
+    multiple: boolean;
+    classType: string;
+    filter: string;
+    subType: string;
+    valueRestriction: string;
+    additionalInfoTags: string[];
 }
 
 interface LocationState {
     caseData?: {
-        subsequentFilingData?: {
-            caseData?: SubsequentCaseData;
-            filedByParties?: Party[];
-            filedAsToParties?: Party[];
-        };
+        subsequentFilingData?: SubsequentFilingData;
     };
     parties?: Party[];
     documentData?: DocumentData[];
@@ -78,6 +130,7 @@ const SubsequentCheckout: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [submissionResponse, setSubmissionResponse] = useState<any>(null);
+    const [showPayloadPreview, setShowPayloadPreview] = useState(false);
 
     const paymentMethods = [
         'Credit Card',
@@ -109,11 +162,11 @@ const SubsequentCheckout: React.FC = () => {
 
     const handleEdit = (section: string) => {
         console.log(`Editing ${section}`);
-        
+
         switch (section) {
             case 'case':
                 // Navigate to subsequent case selection/view
-                navigate('/services/jti-filing/subsequent-case', {
+                navigate('/services/jti-filing/subsequent-filing', {
                     state: {
                         ...state,
                         editMode: true,
@@ -123,7 +176,7 @@ const SubsequentCheckout: React.FC = () => {
                 break;
             case 'parties':
                 // Navigate to party management for subsequent filing
-                navigate('/services/jti-filing/subsequent-party', {
+                navigate('/services/jti-filing/subsequent-add-party', {
                     state: {
                         ...state,
                         editMode: true,
@@ -133,7 +186,7 @@ const SubsequentCheckout: React.FC = () => {
                 break;
             case 'documents':
                 // Navigate back to document upload
-                navigate('/services/jti-filing/subsequent-documents', {
+                navigate('/services/jti-filing/subsequent-upload-documents', {
                     state: state
                 });
                 break;
@@ -141,7 +194,7 @@ const SubsequentCheckout: React.FC = () => {
     };
 
     const handleBack = () => {
-        navigate('/services/jti-filing/subsequent-documents', {
+        navigate('/services/jti-filing/subsequent-upload-documents', {
             state: state
         });
     };
@@ -191,10 +244,10 @@ const SubsequentCheckout: React.FC = () => {
                     messageReceiptMessage: {
                         error: [{
                             errorCode: { value: 'NETWORK_ERROR' },
-                            errorText: { 
-                                value: error instanceof Error 
-                                    ? error.message 
-                                    : 'Network error: Unable to connect to the server. Please check your connection and try again.' 
+                            errorText: {
+                                value: error instanceof Error
+                                    ? error.message
+                                    : 'Network error: Unable to connect to the server. Please check your connection and try again.'
                             }
                         }]
                     }
@@ -207,94 +260,183 @@ const SubsequentCheckout: React.FC = () => {
     };
 
     const prepareSubsequentFilingPayload = () => {
-        // Get the first filed-by party for contact information
-        const primaryParty = filedByParties[0];
-        
-        // Get attorney information if available
-        const attorney = primaryParty?.attorneys?.[0];
+        // Get court information from raw API data if available
+        const rawApiData = subsequentData?.rawApiData;
+        const courtInfo = rawApiData?.caseDetails?.courtName ||
+            caseData?.caseTitle?.includes('Madera') ? "Madera County Superior Court" :
+            caseData?.caseTitle?.includes('Placer') ? "Placer County Superior Court" :
+                "Madera County Superior Court"; // Default fallback
 
-        const payload = {
+        // Determine court source text based on court name or case data
+        let sourceText = "MAD"; // Default to Madera
+        const courtNameLower = courtInfo.toLowerCase();
+
+        if (courtNameLower.includes("placer")) {
+            sourceText = "PLA";
+        } else if (courtNameLower.includes("madera")) {
+            sourceText = "MAD";
+        } else if (courtNameLower.includes("sacramento")) {
+            sourceText = "SAC";
+        }
+
+        // Build metadata items for each document based on document type metadata
+        const buildMetadataItems = (doc: DocumentData, index: number) => {
+            const metadataItems: any[] = [];
+
+            console.log(`Building metadata for document: ${doc.documentType}`);
+            console.log(`Document has ${doc.metadata?.length || 0} metadata definitions`);
+
+            // If document has NO metadata definition, return empty array (like "Motion: Quash")
+            if (!doc.metadata || doc.metadata.length === 0) {
+                console.log(`⚠️ No metadata required for ${doc.documentType}`);
+                return metadataItems;
+            }
+
+            // Process each metadata definition from the document type
+            doc.metadata.forEach((meta, metaIndex) => {
+                console.log(`Processing metadata ${metaIndex + 1}: ${meta.code} (${meta.name})`);
+
+                // Handle different metadata types based on code and valueRestriction
+                switch (meta.code) {
+                    case "FILING_PARTY":
+                        // Only process if valueRestriction is "existing-data"
+                        if (meta.valueRestriction === "existing-data" && filedByParties.length > 0) {
+                            const filingParty = filedByParties[0];
+                            const partyId = filingParty.participantRefId || filingParty.id;
+
+                            metadataItems.push({
+                                code: meta.code,
+                                classType: meta.classType,
+                                subType: meta.subType,
+                                valueRestriction: meta.valueRestriction,
+                                idReferences: [partyId]
+                            });
+
+                            console.log(`✅ Added FILING_PARTY with ID: ${partyId}`);
+                        }
+                        break;
+
+                    case "REPRESENTING":
+                        // Only process if valueRestriction is "existing-data"
+                        if (meta.valueRestriction === "existing-data" && filedByParties.length > 0) {
+                            // Could be same party or different - for now using first party
+                            const representedParty = filedByParties[0];
+                            const partyId = representedParty.participantRefId || representedParty.id;
+
+                            metadataItems.push({
+                                code: meta.code,
+                                classType: meta.classType,
+                                subType: meta.subType,
+                                valueRestriction: meta.valueRestriction,
+                                idReferences: [partyId]
+                            });
+
+                            console.log(`✅ Added REPRESENTING with ID: ${partyId}`);
+                        }
+                        break;
+
+                    case "FILING_ATTORNEY":
+                        // Only process if valueRestriction is "existing-data" and attorney exists
+                        if (meta.valueRestriction === "existing-data" &&
+                            filedByParties.length > 0 &&
+                            filedByParties[0].attorneys &&
+                            filedByParties[0].attorneys.length > 0) {
+
+                            const attorney = filedByParties[0].attorneys[0];
+
+                            metadataItems.push({
+                                code: meta.code,
+                                classType: meta.classType,
+                                subType: meta.subType || "",
+                                valueRestriction: meta.valueRestriction,
+                                idReferences: [attorney.id]
+                            });
+
+                            console.log(`✅ Added FILING_ATTORNEY with ID: ${attorney.id}`);
+                        } else {
+                            console.log(`⚠️ Skipping FILING_ATTORNEY - no attorney data available`);
+                        }
+                        break;
+
+                    case "FILING_PARTY_ADDRESS":
+                        // Only add if party is self-represented
+                        if (filedByParties.length > 0 && filedByParties[0].representingYourself) {
+                            const party = filedByParties[0];
+
+                            metadataItems.push({
+                                code: meta.code,
+                                classType: meta.classType,
+                                contactValue: {
+                                    address1: party.selfRepAddress || "",
+                                    address2: party.selfRepAddress2 || "",
+                                    city: party.selfRepCity || "",
+                                    state: party.selfRepState || "",
+                                    zip: party.selfRepZip || "",
+                                    country: party.selfRepCountry || "US",
+                                    email: party.selfRepEmail || "",
+                                    telephoneType: "BUS",
+                                    addressType: "BUS"
+                                }
+                            });
+
+                            console.log(`✅ Added FILING_PARTY_ADDRESS for self-represented party`);
+                        } else {
+                            console.log(`⚠️ Skipping FILING_PARTY_ADDRESS - party not self-represented`);
+                        }
+                        break;
+
+                    case "NEW_FILING_PARTY":
+                        // Skip if valueRestriction is "new-data" (we're using existing parties)
+                        if (meta.valueRestriction === "new-data") {
+                            console.log(`⚠️ Skipping NEW_FILING_PARTY - using existing parties`);
+                        }
+                        break;
+
+                    case "NEW_ATTORNEY":
+                        // Skip if valueRestriction is "new-data" (we're using existing attorneys)
+                        if (meta.valueRestriction === "new-data") {
+                            console.log(`⚠️ Skipping NEW_ATTORNEY - using existing attorneys`);
+                        }
+                        break;
+
+                    default:
+                        console.log(`⚠️ Unknown metadata type: ${meta.code} - skipping`);
+                        break;
+                }
+            });
+
+            console.log(`✅ Built ${metadataItems.length} metadata items for ${doc.documentType}`);
+            return metadataItems;
+        };
+
+        const payload: any = {
             caseDocketId: caseData?.caseDocketId,
-            complaintTypeId: documents[0]?.documentTypeId?.toString() || "1108856",
             court: {
                 organizationId: "https://aux-pub-efm-madera-ca.ecourt.com/",
-                sourceText: "PLA",
-                courtName: "Placer County Superior Court"
+                sourceText: sourceText,
+                courtName: courtInfo
             },
+
+            // ✅ Add subCase at root if any document requires it
+            ...(documents.some(doc => doc.efmRequiresSubCase) && {
+                subCase: {
+                    id: documents.find(doc => doc.efmRequiresSubCase)?.subCaseId || "121"
+                }
+            }),
+
             documents: documents.map((doc, index) => ({
                 documentId: `doc${index}`,
-                binaryUrl: "https://docs-educore-pro.s3.eu-west-2.amazonaws.com/1_compressed.pdf",
+                binaryUrl: "https://example.com/docs/answer.pdf", // Replace with uploaded file URL
                 descriptionCode: doc.documentCode,
-                fileControlId: (2990 + index).toString(),
-                complaintType: doc.documentTypeId?.toString() || "1108856",
                 binaryFormat: doc.fileType || "application/pdf",
-                metadataItems: [
-                    {
-                        code: "FILING_PARTY",
-                        classType: "caseParticipant",
-                        subType: "filed-by",
-                        valueRestriction: "existing-data",
-                        idReferences: [primaryParty?.id || primaryParty?.participantRefId]
-                    },
-                    {
-                        code: "FILING_PARTY_ADDRESS",
-                        classType: "contact",
-                        contactValue: {
-                            address1: "333 Davis Ct.",
-                            address2: "",
-                            city: "Sacramento",
-                            state: "CA",
-                            zip: "93636",
-                            country: "US",
-                            email: attorney?.email || "attorney@example.com",
-                            telephoneType: "BUS",
-                            addressType: "BUS"
-                        }
-                    },
-                    ...(attorney ? [{
-                        code: "EXISTING_ATTORNEY",
-                        classType: "caseAssignment",
-                        subType: "filed-by",
-                        valueRestriction: "new-data",
-                        attorneyValue: {
-                            person: {
-                                id: `ref${index + 2}`,
-                                givenName: attorney.firstName,
-                                middleName: attorney.middle || "",
-                                surName: attorney.lastName,
-                                barInformation: {
-                                    id: attorney.barNumber,
-                                    category: "BAR"
-                                }
-                            },
-                            organization: {
-                                id: `ref${index + 3}`
-                            },
-                            AssignmentRole: attorney.role,
-                            contactInformation: {
-                                telephone: {
-                                    number: "2136330309",
-                                    type: "W"
-                                },
-                                email: attorney.email,
-                                mailingAddress: {
-                                    street: attorney.firm || "111 N Hill St Rm 501",
-                                    city: "Los Angeles",
-                                    state: "CA",
-                                    postalCode: "90012",
-                                    locationType: "M"
-                                }
-                            }
-                        }
-                    }] : [])
-                ]
+                fileControlId: (index + 1).toString(),
+                metadataItems: buildMetadataItems(doc, index)
             })),
+
             payment: {
-                customerProfileId: "0",
-                customerPaymentProfileId: "0",
                 paymentType: paymentMethod
             },
-            documentIdentificationId: `DOC${Date.now()}`,
+            documentIdentificationId: `DOC${new Date().toISOString().slice(0, 10).replace(/-/g, '')}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
             sendingMDELocationId: "https://aux-pub-efm-madera-ca.ecourt.com/"
         };
 
@@ -338,7 +480,7 @@ const SubsequentCheckout: React.FC = () => {
         return (
             <div className="min-h-screen bg-gray-50">
                 <JTIHeader />
-                <main className="pt-24 pb-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
                         <div className="flex items-start space-x-3">
                             <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0 mt-0.5" />
@@ -424,11 +566,10 @@ const SubsequentCheckout: React.FC = () => {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-600">Status:</p>
-                                <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                                    caseData?.caseStatus === 'OPEN' 
-                                        ? 'bg-green-100 text-green-700' 
-                                        : 'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-1 rounded text-xs font-semibold ${caseData?.caseStatus === 'OPEN'
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-700'
+                                    }`}>
                                     {caseData?.caseStatus}
                                 </span>
                             </div>
@@ -553,16 +694,68 @@ const SubsequentCheckout: React.FC = () => {
                                 </button>
                             </div>
                             <div className="p-6 space-y-4">
-                                {documents.map((doc) => (
-                                    <div key={doc.id} className="flex items-start space-x-3">
-                                        <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                        <div className="flex-1">
-                                            <p className="text-sm text-gray-900 font-normal">{doc.documentType}</p>
-                                            <p className="text-xs text-gray-500 mt-0.5">Code: {doc.documentCode}</p>
-                                            <p className="text-xs text-gray-600 mt-1">{doc.fileName} - {formatFileSize(doc.fileSize)}</p>
+                                {documents.map((doc, docIndex) => (
+                                    <div key={doc.id} className="border border-gray-200 rounded-lg p-4">
+                                        <div className="flex items-start space-x-3">
+                                            <FileText className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                                            <div className="flex-1">
+                                                <p className="text-sm text-gray-900 font-normal">{doc.documentType}</p>
+                                                <p className="text-xs text-gray-500 mt-0.5">Code: {doc.documentCode}</p>
+                                                <p className="text-xs text-gray-600 mt-1">{doc.fileName} - {formatFileSize(doc.fileSize)}</p>
+
+                                                {/* Metadata Summary */}
+                                                {doc.metadata && doc.metadata.length > 0 && (
+                                                    <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                                        <p className="text-xs font-semibold text-blue-900 mb-2">
+                                                            📋 Metadata Requirements ({doc.metadata.length} fields)
+                                                        </p>
+                                                        <div className="space-y-1">
+                                                            {doc.metadata.map((meta, metaIdx) => (
+                                                                <div key={metaIdx} className="flex items-center gap-2">
+                                                                    {meta.valueRestriction === 'existing-data' ? (
+                                                                        <span className="text-green-600 text-xs">✓</span>
+                                                                    ) : (
+                                                                        <span className="text-gray-400 text-xs">○</span>
+                                                                    )}
+                                                                    <span className="text-xs text-gray-700">
+                                                                        {meta.name}
+                                                                        {meta.valueRestriction === 'new-data' && (
+                                                                            <span className="text-gray-500 ml-1">(skipped - new data)</span>
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {doc.metadata && doc.metadata.length === 0 && (
+                                                    <div className="mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                                        <p className="text-xs text-gray-600">
+                                                            ℹ️ No additional metadata required for this document type
+                                                        </p>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
+
+                                {/* File Upload Warning */}
+                                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                                    <div className="flex items-start gap-3">
+                                        <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-semibold text-amber-900">File Upload Required</p>
+                                            <p className="text-xs text-amber-800 mt-1">
+                                                Before submission, files must be uploaded to a storage service and the URLs must be included in the API payload.
+                                                Currently using placeholder URLs.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     )}
@@ -590,6 +783,31 @@ const SubsequentCheckout: React.FC = () => {
                             </select>
                         </div>
                     </div>
+
+                    {/* API Payload Preview (for debugging) */}
+                    {paymentMethod && (
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+                            <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                                <h2 className="text-base font-bold text-gray-900">API Payload Preview</h2>
+                                <button
+                                    onClick={() => setShowPayloadPreview(!showPayloadPreview)}
+                                    className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1"
+                                >
+                                    {showPayloadPreview ? 'Hide' : 'Show'} Payload
+                                </button>
+                            </div>
+                            {showPayloadPreview && (
+                                <div className="p-6">
+                                    <pre className="bg-gray-50 p-4 rounded-lg text-xs overflow-x-auto border border-gray-200">
+                                        {JSON.stringify(prepareSubsequentFilingPayload(), null, 2)}
+                                    </pre>
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        ℹ️ This preview shows the exact payload that will be sent to the API
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Estimated Fees Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -631,11 +849,10 @@ const SubsequentCheckout: React.FC = () => {
                         <button
                             onClick={handleSubmit}
                             disabled={!paymentMethod || isSubmitting}
-                            className={`px-8 py-2.5 text-white rounded-lg transition font-medium shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${
-                                paymentMethod && !isSubmitting
-                                    ? 'bg-purple-600 hover:bg-purple-700'
-                                    : 'bg-gray-400'
-                            }`}
+                            className={`px-8 py-2.5 text-white rounded-lg transition font-medium shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${paymentMethod && !isSubmitting
+                                ? 'bg-purple-600 hover:bg-purple-700'
+                                : 'bg-gray-400'
+                                }`}
                         >
                             {isSubmitting ? (
                                 <>
@@ -659,15 +876,13 @@ const SubsequentCheckout: React.FC = () => {
                 return (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                            <div className={`px-6 py-4 border-b border-gray-200 ${
-                                isSuccess
-                                    ? 'bg-gradient-to-r from-green-50 to-green-100'
-                                    : 'bg-gradient-to-r from-red-50 to-red-100'
-                            }`}>
+                            <div className={`px-6 py-4 border-b border-gray-200 ${isSuccess
+                                ? 'bg-gradient-to-r from-green-50 to-green-100'
+                                : 'bg-gradient-to-r from-red-50 to-red-100'
+                                }`}>
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                                        isSuccess ? 'bg-green-600' : 'bg-red-600'
-                                    }`}>
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isSuccess ? 'bg-green-600' : 'bg-red-600'
+                                        }`}>
                                         {isSuccess ? (
                                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

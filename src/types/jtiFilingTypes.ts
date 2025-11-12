@@ -132,6 +132,7 @@ export interface DocumentType {
   id: number;
   code: string;
   name: string;
+  efmRequiresSubCase: boolean;
   isActive: boolean;
   metadata: DocumentMetadata[];
   caseTypes: any[];

@@ -294,11 +294,12 @@ const Checkout: React.FC = () => {
     const prepareFilingPayload = () => {
         const caseData = state.caseData;
         const parties = state.partyData || [];
+        const filedAsToParties = state.partyWithFiledAsToData || [];
         const documents = state.documentData || [];
 
         // Separate parties by role
         const plaintiffs = parties.filter(p => p.role === 'PLAIN' || p.role === 'PETR');
-        const defendants = parties.filter(p => p.role === 'DEF' || p.role === 'RESP');
+        const defendants = filedAsToParties.filter(p => p.role === 'DEF' || p.role === 'RESP');
 
         // Collect all attorneys from all parties
         const allAttorneys: any[] = [];

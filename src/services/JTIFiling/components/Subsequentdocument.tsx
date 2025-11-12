@@ -6,13 +6,28 @@ import { jtiFilingService } from '../jtiFilingService';
 import { ApiError } from '../apiConfig';
 import { DocumentType } from '../../../types/jtiFilingTypes';
 
+interface DocumentMetadata {
+    code: string;
+    name: string;
+    description: string;
+    multiple: boolean;
+    classType: string;
+    filter: string;
+    subType: string;
+    valueRestriction: string;
+    additionalInfoTags: string[];
+}
+
 interface Document {
     id: string;
     documentType: string;
     documentTypeId: number | null;
     documentCode: string;
+    efmRequiresSubCase: boolean;
     file: File | null;
     fileName: string;
+    metadata?: DocumentMetadata[]; // ✅ Added metadata field
+    subCaseId?: string;
 }
 
 interface DocketEntry {
@@ -74,6 +89,7 @@ const SubsequentDocument: React.FC = () => {
             const data = await jtiFilingService.getSubsequentDocumentTypes(caseTypeId);
             setDocumentTypes(data);
             console.log('✅ Loaded document types:', data.length);
+            console.log('Document types with metadata:', data);
 
             // Add first document automatically with first document type
             if (data.length > 0) {
@@ -82,8 +98,10 @@ const SubsequentDocument: React.FC = () => {
                     documentType: data[0].name,
                     documentTypeId: data[0].id,
                     documentCode: data[0].code,
+                    efmRequiresSubCase: data[0].efmRequiresSubCase ?? false,
                     file: null,
-                    fileName: ''
+                    fileName: '',
+                    metadata: data[0].metadata || [] // ✅ Include metadata from API
                 };
                 setDocuments([firstDoc]);
             }
@@ -151,8 +169,10 @@ const SubsequentDocument: React.FC = () => {
             documentType: documentTypes[0].name,
             documentTypeId: documentTypes[0].id,
             documentCode: documentTypes[0].code,
+            efmRequiresSubCase: documentTypes[0].efmRequiresSubCase ?? false,
             file: null,
-            fileName: ''
+            fileName: '',
+            metadata: documentTypes[0].metadata || [] // ✅ Include metadata
         };
         setDocuments([...documents, newDocument]);
     };
@@ -174,7 +194,9 @@ const SubsequentDocument: React.FC = () => {
                     ...doc,
                     documentType: value,
                     documentTypeId: selectedDocType?.id || null,
-                    documentCode: selectedDocType?.code || ''
+                    documentCode: selectedDocType?.code || '',
+                    efmRequiresSubCase: selectedDocType?.efmRequiresSubCase ?? false,
+                    metadata: selectedDocType?.metadata || [] // ✅ Update metadata when doc type changes
                 }
                 : doc
         ));
@@ -222,15 +244,20 @@ const SubsequentDocument: React.FC = () => {
 
         console.log('Documents to submit:', documents);
 
+        // ✅ Include metadata in documentData
         const documentData = documents.map(doc => ({
             id: doc.id,
             documentType: doc.documentType,
             documentTypeId: doc.documentTypeId,
             documentCode: doc.documentCode,
+            efmRequiresSubCase: doc.efmRequiresSubCase ?? false,
             fileName: doc.fileName,
             fileSize: doc.file?.size,
-            fileType: doc.file?.type
+            fileType: doc.file?.type,
+            metadata: doc.metadata || [] // ✅ Pass metadata to checkout
         }));
+
+        console.log('Document data with metadata:', documentData);
 
         navigate('/services/jti-filing/subsequent-checkout', {
             state: {
@@ -459,6 +486,12 @@ const SubsequentDocument: React.FC = () => {
                                     <h3 className="text-xl font-bold text-gray-900">
                                         New Document #{index + 1}
                                     </h3>
+                                    {/* ✅ Show metadata count badge */}
+                                    {document.metadata && document.metadata.length > 0 && (
+                                        <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded">
+                                            {document.metadata.length} metadata fields
+                                        </span>
+                                    )}
                                 </div>
                                 {documents.length > 1 && (
                                     <button
@@ -487,7 +520,7 @@ const SubsequentDocument: React.FC = () => {
                                         ) : (
                                             documentTypes.map((type) => (
                                                 <option key={type.id} value={type.name}>
-                                                    {type.name}
+                                                    {type.name} {type.metadata && type.metadata.length > 0 && `(${type.metadata.length} fields)`}
                                                 </option>
                                             ))
                                         )}
