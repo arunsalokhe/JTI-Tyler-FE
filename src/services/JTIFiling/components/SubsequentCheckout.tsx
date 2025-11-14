@@ -785,7 +785,7 @@ const SubsequentCheckout: React.FC = () => {
                     </div>
 
                     {/* API Payload Preview (for debugging) */}
-                    {paymentMethod && (
+                    {/* {paymentMethod && (
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
                             <div className="px-6 py-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
                                 <h2 className="text-base font-bold text-gray-900">API Payload Preview</h2>
@@ -807,7 +807,7 @@ const SubsequentCheckout: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    )}
+                    )} */}
 
                     {/* Estimated Fees Section */}
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200">
