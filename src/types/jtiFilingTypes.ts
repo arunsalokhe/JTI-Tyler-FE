@@ -248,6 +248,7 @@ export interface IncidentAddress {
   state: string | null;
   postalCode: string;
   country: string | null;
+  zip : string | null;
 }
 
 export interface RelatedCaseAssignment {
@@ -297,6 +298,79 @@ export interface CodelistResponse {
   relationships?: CodelistRelationship[];
   hasRelationships?: boolean;
 }
+
+/**
+ * Interface for individual case data
+ */
+export interface Case {
+  caseDocketId: string;
+  caseTrackingId: string;
+  caseTitle: string;
+  caseCategoryText: string;
+}
+
+/**
+ * Interface for API response when fetching case list
+ */
+export interface CaseListResponse {
+  success: boolean;
+  message: string;
+  cases: Case[];
+  totalCount: number;
+  errors: string[];
+  queriedAt: string;
+}
+
+/**
+ * Interface for case list filter parameters
+ */
+export interface CaseListFilterParams {
+  courtOrganizationId: string;
+  caseCategoryText: string;
+  caseTypeText: string;
+  caseDocketId: string;
+  filedDateFrom: string;
+  filedDateTo: string;
+  participantName: string;
+}
+
+/**
+ * Interface for pagination state
+ */
+export interface PaginationState {
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;
+  totalPages: number;
+}
+
+/**
+ * Interface for API credentials
+ */
+export interface ApiCredentials {
+  userName: string;
+  password: string;
+}
+
+/**
+ * Type for case category codes
+ */
+export type CaseCategoryCode = '411900' | '421110' | string;
+
+/**
+ * Type for API request status
+ */
+export type ApiStatus = 'idle' | 'loading' | 'success' | 'error';
+
+/**
+ * Interface for error handling
+ */
+export interface ApiError {
+  message: string;
+  code?: string;
+  details?: string[];
+}
+
 
 // ============== Helper function to map API data to app format ==============
 

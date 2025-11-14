@@ -18,6 +18,8 @@ import SubsequentCase from '../services/JTIFiling/components/SubsequentCase.tsx'
 import SubsequentParty from '../services/JTIFiling/components/SubsequentParty.tsx';
 import SubsequentDocument from '@/services/JTIFiling/components/Subsequentdocument.tsx';
 import SubsequentCheckout from '@/services/JTIFiling/components/SubsequentCheckout.tsx';
+import MyPreviousFilings from '../services/JTIFiling/components/Mypreviousfilings.tsx';
+import CaseDetails from '../services/JTIFiling/components/Casedetails.tsx';
 
 
 export const router = createBrowserRouter([
@@ -92,6 +94,14 @@ export const router = createBrowserRouter([
   {
     path: '/services/jti-filing/subsequent-checkout',
     element: <SubsequentCheckout />,
+  },
+  {
+    path: '/services/jti-filing/my-previous-filings',
+    element: <MyPreviousFilings />,
+  },
+  {
+    path: '/services/jti-filing/case-details/:caseTrackingId',
+    element: <CaseDetails />,
   },
   {
     path: "/tyler-filing/*",

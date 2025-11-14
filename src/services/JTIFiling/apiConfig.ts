@@ -31,6 +31,11 @@ export const API_CONFIG = {
       GET_CASE: (userName: string, password: string) =>
         `/CaseList/GetCase?userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`,
     },
+    // Case List endpoints
+    CASE_LIST: {
+      GET_CASE_LIST: (userName: string, password: string) =>
+        `/CaseList/GetCaseList?userName=${encodeURIComponent(userName)}&password=${encodeURIComponent(password)}`,
+    },
     CODELIST: {
       GET_CASE_TYPE: (code: string) => `/MaderaCourt/codelist/case-type/${code}`,
       GET_CASE_CATEGORY: (code: string) => `/MaderaCourt/codelist/case-category/${code}`,

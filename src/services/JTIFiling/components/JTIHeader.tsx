@@ -69,16 +69,16 @@ const JTIHeader: React.FC = () => {
               Subsequent Filing
             </button>
             <button
-              onClick={() => handleNavigation('/my-filings')}
+              onClick={() => handleNavigation('/services/jti-filing/my-previous-filings')}
               className={`text-sm font-medium transition ${
-                isActive('/my-filings')
+                isActive('/services/jti-filing/my-previous-filings')
                   ? 'text-indigo-600'
                   : 'text-gray-900 hover:text-indigo-600'
               }`}
             >
               My Previous Filings
             </button>
-            <button
+            {/* <button
               onClick={() => handleNavigation('/my-organization')}
               className={`text-sm font-medium transition ${
                 isActive('/my-organization')
@@ -87,7 +87,7 @@ const JTIHeader: React.FC = () => {
               }`}
             >
               My Organization
-            </button>
+            </button> */}
           </div>
 
           {/* Mobile Menu Button */}
@@ -139,9 +139,9 @@ const JTIHeader: React.FC = () => {
                 Subsequent Filing
               </button>
               <button
-                onClick={() => handleNavigation('/my-filings')}
+                onClick={() => handleNavigation('/services/jti-filing/my-previous-filings')}
                 className={`text-sm font-medium transition text-left px-2 py-2 rounded-md ${
-                  isActive('/my-filings')
+                  isActive('/services/jti-filing/my-previous-filings')
                     ? 'text-indigo-600 bg-indigo-50'
                     : 'text-gray-900 hover:text-indigo-600 hover:bg-gray-50'
                 }`}

@@ -101,17 +101,17 @@ const JTIHomepage: React.FC = () => {
             </h3>
             <p className="text-gray-700 text-sm sm:text-base leading-relaxed">
               Attorney service companies wishing to take part in the project can contact{' '}
-
-              href="mailto:efile@countrywide.com"
-              className="text-indigo-600 hover:text-indigo-700 font-medium underline"
-              <a>
+              <a
+                href="mailto:efile@countrywide.com"
+                className="text-indigo-600 hover:text-indigo-700 font-medium underline"
+              >
                 efile@countrywide.com
               </a>{' '}
               or call{' '}
-
-              href="tel:0001115555"
-              className="text-indigo-600 hover:text-indigo-700 font-medium"
-              <a>
+              <a
+                href="tel:0001115555"
+                className="text-indigo-600 hover:text-indigo-700 font-medium"
+              >
                 (000) 111-5555
               </a>{' '}
               Option 2.
