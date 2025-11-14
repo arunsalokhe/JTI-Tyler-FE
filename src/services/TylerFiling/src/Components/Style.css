@@ -1,0 +1,1654 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+
+/* declare Color Variables */
+:root {
+    --greybackground: #EEEEEE;
+    --greyleftnav: #DFDFDF;
+    --greybutton: #343434;
+    --greynotif: #D9D9D9;
+    --grey_bgdark: #939393;
+    --purple: #9092f7;
+    --lightpurple: #916aab4d;
+    --lightpurple2: #8143aa;
+    --blue: #00648F;
+    --white: #FFFFFF;
+}
+
+
+/* Main Styles */
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0
+}
+
+body {
+    font-family: 'Raleway', Arial, Helvetica, sans-serif;
+    background-color: var(--greybackground);
+}
+
+.btn:focus {
+    border: none;
+    box-shadow: none;
+}
+
+.btn-dark,
+.bg-dark {
+    background-color: #9092f7 !important;
+    border-color: #9092f7;
+}
+
+.btn-dark:hover,
+.bg-dark:hover {
+    background-color: #521879;
+    border-color: #521879;
+}
+
+/* Header */
+.header {
+    grid-area: head;
+    background-color: #9092f7;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 1050;
+    width: 100%;
+    transition: transform 0.3s ease-in-out;
+}
+
+body {
+    padding-top: 60px;
+    /* Match the header height */
+    margin: 0;
+    overflow-x: hidden;
+}
+
+/* Optional: keep scrollbar always visible to prevent shifting */
+html {
+    overflow-y: scroll;
+}
+
+.fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1050;
+    /* above rest of the page */
+}
+
+.nav-pills .nav-link.active,
+.nav-pills .show>.nav-link {
+    background-color: #ffffff33;
+}
+
+
+/* Sidebar left */
+.sidebar-left {
+    z-index: 10;
+    width: 250px;
+    height: 100%;
+    position: fixed;
+    background-color: var(--greyleftnav);
+}
+
+.bottom-section {
+    width: 100%;
+    position: -webkit-sticky;
+    position: sticky;
+}
+
+.sidebar-left .nav-pills .nav-link.active,
+.sidebar-left .nav-pills .show>.nav-link {
+    background-color: #3434341f;
+    width: 250px;
+    border-radius: 0;
+    box-sizing: border-box;
+    border-bottom: 6px solid #3434341f;
+}
+
+
+
+/* Dashboard Page */
+.dashboard-page {
+    margin-top: 4%;
+    padding: 10px 0;
+    margin-right: 0;
+    margin-left: 250px;
+
+}
+
+.btn_grey {
+    background-color: var(--greynotif);
+    color: black;
+}
+
+.icon_brightness {
+    filter: brightness(3.8);
+}
+
+.col-md-2-5 {
+    width: 18.8%;
+}
+
+.wrapper {
+    margin-left: -1rem;
+}
+
+.text-blue {
+    color: var(--blue);
+}
+
+
+/* Initiate new case Page / Main Content */
+.section-page {
+    margin-top: 4%;
+    padding: 10px 0;
+    margin-right: 0;
+    margin-left: 250px;
+}
+
+.initiate_case_sec_btn .btn-secondary {
+    background-color: var(--greynotif);
+    border-color: var(--greynotif);
+}
+
+.case_form {
+    text-align: left;
+    margin: 0 10px;
+}
+
+.section-case-bg {
+    background-color: var(--greybackground);
+    text-align: left;
+}
+
+.align-checkbox {
+    vertical-align: center !important;
+}
+
+/* Account info Page */
+.tip_data {
+    background: var(--lightpurple);
+    text-indent: 40px;
+}
+
+.background_card_header {
+    background-color: var(--purple);
+    color: var(--white);
+}
+
+
+/* Support Page */
+.support-sec .card {
+    box-shadow: 0px 4px 4px #00000040;
+}
+
+.support-sec .card .card-header span {
+    margin: auto 0 auto auto;
+}
+
+.support-sec .card ul li {
+    font-size: 14px;
+}
+
+
+/* Sign Up Page -s1*/
+.signup-page-lg-cont {
+    width: 1065px;
+    background: #fff;
+}
+
+.signup-page-sm-cont {
+    width: 673px;
+}
+
+.separator {
+    width: 100%;
+    max-width: 500px;
+    /* optional, same as button max */
+    text-align: center;
+    border-bottom: 1px solid gray;
+    line-height: 0.1em;
+    margin: 20px auto;
+    /* center it */
+}
+
+.separator span {
+    background: var(--white);
+    padding: 0 10px;
+}
+
+
+.logintextseparator {
+    background-color: #999;
+    padding: 0 0.5em;
+    color: #999;
+    font-weight: bold;
+}
+
+
+/* Sign Up Page -s2*/
+.signup-page-md-cont {
+    width: 1000px;
+}
+
+.light-grey-bg-color {
+    background-color: var(--greynotif);
+}
+
+/* Logout page */
+.logout-container {
+    max-width: 800px;
+    margin: 0px auto;
+    background: #fff;
+    padding: 15px;
+}
+
+.logout-page .btn {
+    font-size: 18px;
+}
+
+/* Payment Settings Page */
+.grey_bg_color {
+    background-color: var(--greyleftnav);
+}
+
+.btn_grey_dark {
+    background-color: var(--grey_bgdark);
+    color: black;
+}
+
+
+/* Invoice List Page */
+.pagination-parent-pos {
+    position: relative;
+}
+
+.custom-pagination {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.custom-pagination .page-link {
+    color: black;
+    background-color: transparent;
+    border: none;
+}
+
+.custom-pagination .active .page-link {
+    background-color: var(--purple);
+}
+
+.custom-pagination .page-link:hover {
+    color: #fff;
+    background-color: var(--purple);
+}
+
+.custom-pagination .page-link:focus {
+    color: #fff;
+    box-shadow: var(--greybutton);
+}
+
+.custom-pagination .disabled .page-link {
+    background-color: transparent;
+    border: none;
+}
+
+
+/* Manage Users page */
+.custom-form-switch .form-check-input {
+    /* change the background from defaut(blue) to purple */
+    background-color: var(--lightpurple2);
+    border: none;
+    /* change it from default(grey) to white  */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+.custom-form-switch .form-check-input:focus {
+    box-shadow: none;
+    border: none;
+    /* change it from default(blue) to white  */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+
+/* payment info page */
+.custom-grey-input {
+    background-color: var(--greynotif);
+}
+
+.custom-grey-input:focus {
+    background-color: var(--greynotif);
+}
+
+
+/* case summary Page */
+.tip_data_2 {
+    background: rgba(255, 217, 83, 0.3);
+}
+
+
+/* modal css */
+
+.modal .btn.cancel:hover {
+    background-color: #916aab4d;
+    border-color: #916aab4d;
+    color: black;
+
+}
+
+.modal .btn.add {
+    background-color: #9092f7;
+    border-color: #9092f7;
+    color: #fff
+}
+
+/* / Add hover effects / initiate page- security option */
+.hover-link {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(19, 44, 210);
+    font-size: 16px;
+}
+
+.hover-link .fa {
+    font-size: 18px;
+    color: #1079ec;
+    transition: color #1079ec ease, transform 0.3s ease;
+}
+
+/* initiate page party section */
+.bordered-div {
+    border: 0.5px solid rgb(213, 213, 231);
+    width: 1000px;
+    padding: 5px;
+    margin-top: auto;
+}
+
+.party-row {
+    padding: 10px;
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 4px;
+}
+
+/* modal service contact in initiate page */
+
+.formchecksection .form-check-input:checked {
+    background-color: black;
+    border-color: black;
+}
+
+.formchecksection .form-check-label {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+
+.loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.w150 {
+    width: 150px;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+
+.text-right {
+    text-align: right;
+}
+
+
+.table {
+    width: 100%;
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+.table td {
+    padding: 8px;
+    vertical-align: middle;
+}
+
+
+.text-right {
+    text-align: right;
+}
+
+.w150 {
+    width: 150px;
+}
+
+.text-bold {
+    font-weight: bold;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.fee-section-item p.text-black-50 {
+    color: #212529 !important;
+}
+
+.fw-bold {
+    font-weight: bold;
+}
+
+.fee-section-item {
+    margin-bottom: 20px;
+}
+
+/* Styling for the footer */
+footer.copyright {
+    position: relative;
+    bottom: 0;
+    padding: 10px;
+    text-align: center;
+    font-size: 12px;
+    color: #888;
+    margin: 100px 0;
+}
+
+footer.copyright a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+footer.copyright a:hover {
+    text-decoration: underline;
+}
+
+.card-header h5 {
+    background-color: #f8f9fa !important;
+    /* Ensures the background is applied */
+    padding: 10px;
+    border-radius: 5px;
+    color: #333;
+    /* Text color */
+    border: 2px solid red;
+    /* Border for debugging */
+}
+
+
+.column-fixed {
+    width: 150px;
+    word-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+:root {
+    --primary: #007bff;
+    /* Change this to your primary color */
+    --bs-white: #ffffff;
+}
+
+.SectionHeader {
+    text-align: left;
+    font-weight: bold;
+    color: #8E9747;
+    font-size: x-large;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0px 5px;
+    /* 2px spacing between rows */
+}
+
+label {
+    font-weight: bold;
+}
+
+.FieldDescription {
+    font-size: 12px;
+    /* Adjust size as needed */
+    color: #666;
+    /* Optional: Makes it slightly dim */
+}
+
+.FieldLabel {
+    font-weight: bold;
+    padding-right: 15px;
+    /* Adjust for more space */
+}
+
+.txtLarge {
+    width: 250px;
+    /* Normal input size */
+}
+
+.txtExtraLarge {
+    width: 350px;
+    /* Bigger input for address fields */
+}
+
+.error-container {
+    border: 1px solid #ff0000;
+    color: #ff0000;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: left;
+    /* Aligns text content to the left */
+    width: fit-content;
+    /* Adjusts width to content */
+}
+
+.error-container ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.table-responsive {
+    margin-bottom: 20px;
+    /* Ensures there's space for pagination */
+}
+
+.theme {
+    color: #6B7C4A !important;
+}
+
+.custom-link {
+    color: #336C9D !important;
+    text-decoration: none;
+    background-color: transparent;
+}
+
+.text-right {
+    text-align: left;
+}
+
+.nav-link span {
+    font-weight: 500;
+}
+
+/* Add yellow bottom border for active sidebar link only */
+#e-filing-side-menu .nav-link.active {
+    background-color: #3434341f;
+    border-bottom: 2px solid #ffa500;
+    color: #000;
+}
+
+
+/* Make table container scrollable */
+.table-container {
+    max-height: 400px;
+    /* Adjust height as needed */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    /* Optional: Adds border for visibility */
+}
+
+/* Fix table headers */
+.column-fixed {
+    position: sticky;
+    top: 0;
+    background: white;
+    /* Ensures the header remains visible */
+    z-index: 1000;
+    text-align: left;
+    /* Ensures proper alignment */
+    border-bottom: 2px solid #ddd;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+}
+
+.nav-pills .nav-link {
+    font-family: Arial, sans-serif !important;
+    font-weight: normal !important;
+}
+
+.custom-link {
+    color: #146fc0 !important;
+    font-weight: normal;
+    font-size: 16px;
+}
+
+.custom-link:hover {
+    color: #146fc0;
+    /* Slightly darker on hover */
+}
+
+.refresh-link:hover {
+    color: #146fc0 !important;
+    /* Change text color to blue on hover */
+}
+
+.dashboard-link {
+    color: #336C9D;
+    /* ✅ Blue text */
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dashboard-link:hover {
+    text-decoration: underline;
+    /* ✅ Underlines both icon & text */
+}
+
+.huge {
+    font-family: Arial, sans-serif !important;
+    font-weight: bold;
+}
+
+.pending-text {
+    font-family: Arial, sans-serif !important;
+}
+
+label {
+    font-weight: bold;
+}
+
+.form-check-label {
+    font-weight: normal !important;
+}
+
+.checkbox-fontawesome {
+    margin-right: 10px;
+    /* Space between radio and text */
+    accent-color: black;
+}
+
+.checkbox-fontawesome:checked {
+    background-color: black;
+    /* Keeps the dot black */
+}
+
+thead {
+    border-bottom: 2px solid #000;
+    /* Thicker black line */
+}
+
+.fa-fw {
+    width: 1.28571429em;
+    text-align: center;
+}
+
+.fa-fw.red {
+    color: #a94442 !important;
+}
+
+.lightgreen {
+    color: #DDE3D4 !important;
+    /* Bootstrap "success" green */
+}
+
+/* General alert styling */
+.alert-warning {
+    color: #8a6d3b;
+    /* Brownish text */
+    background-color: #fcf8e3;
+    /* Light yellow */
+    border-color: #faebcc;
+    /* Light yellow border */
+}
+
+/* Ensure .alert-info has its own style */
+.alert-info {
+    color: #000000;
+    /* Black text for .alert-info */
+}
+
+.alert-warning {
+    color: #000000 !important;
+    /* Force black text */
+    background-color: #fcf8e3;
+    border-color: #faebcc;
+}
+
+.translate-middle-y {
+    transform: translateY(-190%) !important;
+    /* Center it vertically */
+}
+
+.loader-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    /* Dark transparent background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    /* Ensure it appears above everything */
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #fff;
+    border-top: 5px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loginseparator {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 25px 0 5px;
+}
+
+.loginseparator::before,
+.loginseparator::after {
+    content: "";
+    flex: 1;
+    border-top: 2px solid #cbd2d6;
+    margin: 0 5px;
+}
+
+.logintextseparator {
+    font-size: 15px;
+    color: #333;
+}
+
+button.close {
+    -webkit-appearance: none;
+    padding: 0;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+}
+
+.modal-close-button {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    margin: 10px;
+}
+
+.close {
+    float: right;
+    font-size: 25px;
+    font-weight: bold;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    filter: alpha(opacity=20);
+    opacity: 0.2;
+}
+
+.close:hover {
+    opacity: 1;
+    /* Ensures visibility on hover */
+}
+
+.btn-default {
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    padding: 6px 12px;
+    /* Inherits from .btn */
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.72857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Hover effect */
+.btn-default:hover {
+    background-color: #f8f9fa;
+    border-color: #b3b3b3;
+    color: #336C9D;
+}
+
+/* Active (clicked) effect */
+.btn-default:active {
+    background-color: #e6e6e6;
+    border-color: #999;
+}
+
+.custom-modal-width {
+    max-width: 600px;
+    /* Adjust width as needed */
+    width: 90%;
+    /* Ensures responsiveness */
+}
+
+.red {
+    color: #a94442 !important;
+}
+
+/* Reduce icon size */
+.small-icon {
+    font-size: 13px;
+    /* Try reducing further if needed */
+    transform: scale(0.8);
+    /* Shrinks the icon */
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Custom Styles for Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Adding custom styles if necessary */
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.navbar-custom {
+    background-color: #2c3e50;
+    /* Example background color */
+}
+
+.navbar-custom .nav-item {
+    font-size: 1.1rem;
+}
+
+.navbar-custom .active {
+    color: #f39c12 !important;
+    /* Active link color */
+}
+
+button {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+button:hover {
+    background-color: #e74c3c;
+    /* Red color on hover */
+}
+
+button:focus {
+    outline: none;
+}
+
+.container {
+    max-width: 1200px;
+    /* Optional: max width of your container */
+}
+
+.navbar-nav .nav-link {
+    color: white !important;
+    /* Makes menu items visible */
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: #f8f9fa !important;
+    /* Slight hover effect */
+}
+
+.dropdown-menu {
+    background-color: #007bff !important;
+    /* Matches navbar */
+    border: none;
+}
+
+.dropdown-menu .dropdown-item {
+    color: white !important;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Ensure the toggle button is fully visible */
+.navbar-toggle {
+    background-color: white !important;
+    border: 1px solid black;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 45px;
+    /* Ensure button is fully visible */
+    height: 35px;
+    /* Adjust height to avoid clipping */
+    cursor: pointer;
+    gap: 5px;
+    /* Space between lines */
+    position: relative;
+    z-index: 9999;
+    /* Ensure it's on top */
+}
+
+/* Prevent button from changing color when clicked */
+.navbar-toggle:focus,
+.navbar-toggle:active {
+    background-color: white !important;
+    border: 1px solid black !important;
+    outline: none;
+    box-shadow: none !important;
+}
+
+/* Hamburger Lines */
+.hamburger-line {
+    width: 28px;
+    /* Adjust width for better visibility */
+    height: 3px;
+    background-color: black;
+}
+
+/* Fix Parent Container Issues */
+.col-auto.d-md-none {
+    position: relative;
+    z-index: 9999;
+    /* Ensure it's always on top */
+}
+
+/* Ensure no parent clips the button */
+.header {
+    overflow: visible !important;
+}
+
+/* Fix potential container issues */
+.container-fluid,
+.row {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* Fix alignment issues */
+@media (max-width: 768px) {
+    .navbar-toggle {
+        margin-right: 0px;
+        /* Ensure it's aligned properly */
+        margin-top: 8px;
+        /* Adjust spacing */
+    }
+}
+
+.dropdown-menu {
+    background: white !important;
+    border: 1px solid #ddd;
+    padding: 5px 0;
+}
+
+.dropdown-item {
+    color: black !important;
+    padding: 8px 15px;
+}
+
+.dropdown-item:hover {
+    background: #f0f0f0;
+}
+
+.nav-link {
+    cursor: pointer;
+}
+
+.logout-btn {
+    color: red !important;
+}
+
+/* Default button styling */
+.nav-item button {
+    background-color: transparent;
+    color: white;
+    padding: 10px;
+    border: none;
+    width: 100%;
+    text-align: left;
+    transition: background 0.3s ease;
+}
+
+/* Selected dropdown background */
+.nav-item.active-dropdown button {
+    background-color: white;
+    /* Selected row background */
+    color: black;
+    /* Text color when selected */
+}
+
+/* Ensure dropdown menu has spacing */
+.dropdown-menu {
+    position: absolute !important;
+    top: 100%;
+    left: 0;
+    width: 100vw;
+    /* Full screen width */
+    z-index: 1050;
+    /* Ensures it appears above other elements */
+    background-color: white !important;
+    /* Adjust as needed */
+}
+
+
+.dropdown-menu .dropdown-item {
+    color: black !important;
+    /* ✅ Ensures text is always black */
+    padding: 5px 10px !important;
+    /* Reduce padding */
+    margin: 0 !important;
+    /* Remove any extra margin */
+    width: 100%;
+    background-color: white !important;
+}
+
+/* .dropdown-menu .dropdown-item:hover {
+    background-color: #f0f0f0; 
+} */
+
+/* Properly position caret */
+.caret {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    vertical-align: middle;
+    border-top: 4px solid;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+}
+
+/* Remove default blue background and text color on selection */
+.dropdown-menu .dropdown-item:active,
+.dropdown-menu .dropdown-item:focus,
+.dropdown-menu .dropdown-item:visited {
+    background-color: transparent !important;
+    /* Remove blue background */
+    color: black !important;
+    /* Keep text black */
+    outline: none !important;
+    /* Remove focus outline */
+    box-shadow: none !important;
+    /* Remove any focus effects */
+}
+
+/* Optional: Add a hover effect for better UX */
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f0f0f0 !important;
+    /* Light gray hover effect */
+}
+
+/* Dropdown Animation */
+.dropdown-menu {
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    /* Smooth but faster */
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    background-color: white !important;
+}
+
+.dropdown-menu.hide {
+    transform: translateY(-50px);
+    /* Moves slightly up while hiding */
+    opacity: 0;
+    visibility: hidden;
+    /* Hides from screen readers too */
+    pointer-events: none;
+}
+
+/* Mobile Menu Animation */
+.mobile-menu {
+    position: fixed;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    /* Full height */
+    background: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transform: translateY(0);
+    transition: transform 0.5s ease-in-out opacity 0.2s ease;
+    overflow-y: auto;
+    /* Slower animation */
+}
+
+/* Hide mobile menu by sliding up */
+.mobile-menu.hide {
+    transform: translateY(-100%);
+    transition: transform 0.5s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+    /* Slower closing animation */
+}
+
+.mobile-menu.show {
+    opacity: 1;
+}
+
+.mobile-dropdown-menu {
+    max-height: calc(100vh - 60px);
+    /* 60px = header height */
+    overflow-y: auto;
+}
+
+
+button.nav-link {
+    background-color: transparent;
+    color: white;
+    border: none;
+    width: 100%;
+    /* Make button take full width */
+    text-align: left;
+    /* Align text properly */
+    padding: 10px;
+    transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+
+button.nav-link:focus,
+button.nav-link:active,
+button.nav-link.selected {
+    /* Ensure selected state stays visible */
+    background-color: white !important;
+    /* White background */
+    color: black !important;
+    /* Dark text for contrast */
+    border-radius: 5px;
+    /* Slight rounding */
+    outline: none !important;
+    /* Remove focus outline */
+    box-shadow: none !important;
+    /* No extra shadow */
+    width: 100%;
+    /* Make sure it's full width */
+    display: block;
+    /* Ensure block-level styling */
+}
+
+/* When menu is open, prevent body from scrolling */
+body.menu-open {
+    overflow: hidden;
+    padding-right: 15px;
+    /* Prevent header shift due to scrollbar disappearing */
+}
+
+/* Make the mobile dropdown area scrollable */
+.mobile-menu-scroll {
+    max-height: calc(100vh - 60px);
+    /* leave space for fixed header */
+    overflow-y: auto;
+}
+
+
+/* Ensure hamburger stays visible */
+.navbar-toggle {
+    z-index: 1050;
+    position: relative;
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    /* Ensures vertical stacking */
+    width: 300px;
+    /* Increased width from 240px to 300px */
+    min-height: 100vh;
+    /* Full height */
+    background-color: #ffffff;
+    /* Light background f8f9fa */
+    border-right: 1px solid #ddd;
+    /* Border for separation */
+    padding: 15px;
+    /* Adjusted padding */
+    position: fixed;
+    /* Fix sidebar on the left */
+    left: 0;
+    top: 0;
+    overflow-y: auto;
+    /* Allows scrolling if content is too long */
+}
+
+
+.sidebar-menu .d-flex {
+    width: 100%;
+}
+
+.sidebar-menu img {
+    max-width: 80%;
+    height: auto;
+    margin-bottom: 10px;
+    /* Add some space below logo */
+}
+
+.sidebar-menu nav {
+    width: 100%;
+}
+
+.sidebar-menu ul {
+    padding: 0;
+    list-style: none;
+    width: 100%;
+}
+
+.sidebar-menu .nav-item {
+    width: 100%;
+}
+
+.sidebar-menu .nav-link {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+}
+
+.sidebar-menu .nav-link i {
+    margin-right: 8px;
+}
+.sidebar-menu .nav {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  
+  .sidebar-menu .nav-item {
+    width: 100%;
+    margin: 0;
+  }
+
+.sidebar-menu .sub-menu {
+    background: #343a40;
+    color: white;
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+}
+
+.sidebar-menu .text-start,
+.sidebar-menu .text-center {
+    width: 100%;
+}
+
+.sidebar-menu .search-case {
+    width: 100%;
+    padding: 10px;
+}
+
+.sidebar-menu .search-case input {
+    width: 100%;
+}
+
+.sidebar-menu footer {
+    margin-top: auto;
+    /* Push footer to the bottom */
+    text-align: start;
+    padding: 10px;
+    font-size: 12px;
+}
+
+.sub-menu {
+    background-color: #9092f7 !important;
+    /* Set purple background */
+    padding: 10px;
+    text-align: start;
+    width: 100%;
+}
+
+.sub-menu h6 {
+    margin: 0;
+    padding: 5px 0;
+    color: white;
+    /* Ensure text remains white */
+}
+
+.recent-cases-buttons {
+    display: flex;
+    justify-content: center;
+    /* Center buttons horizontally */
+    gap: 10px;
+    /* Space between buttons */
+    margin-top: 10px;
+}
+
+.search-case p {
+    font-weight: bold;
+    /* Make "Search Cases" text bold */
+    margin-bottom: 8px;
+    /* Add space between text and search bar */
+}
+
+.search-case .input-group {
+    margin-top: 8px;
+    /* Add space between first search bar and new input */
+}
+
+/* ✅ Fixes Bootstrap Container */
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.main-content {
+    margin-left: 250px;
+    /* Same as your sidebar width */
+    max-width: calc(100% - 270px);
+}
+
+
+
+/* ✅ Fixes Bootstrap Row */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+/* ✅ Makes Buttons Align Correctly */
+@media (max-width: 768px) {
+    .d-flex.justify-content-md-end {
+        justify-content: start !important;
+        /* Moves buttons to left on mobile */
+    }
+}
+
+/* ✅ Bootstrap Container Fix */
+.container-fluid {
+    max-width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* ✅ Bootstrap Row Fix */
+.row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+}
+
+/* ✅ Align Everything to Left in Mobile */
+@media (max-width: 768px) {
+    .d-flex.justify-content-md-end {
+        justify-content: flex-start !important;
+        /* Moves buttons to left on mobile */
+    }
+}
+
+.header,
+.sidebar-menu {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+.nav-link.small {
+    font-size: 0.85rem;
+    padding: 0.72rem 0.50rem;
+}
+
+.nav-link.small i {
+    font-size: 0.85rem;
+}
+
+.dashboard-paragraph {
+    font-size: 0.85rem;
+    /* Adjust to your desired size */
+    color: #333;
+}
+
+.small-link-list {
+    font-size: 0.875rem;
+    /* Smaller text */
+    color: #336C9D;
+}
+
+.small-link-list a {
+    color: #336C9D;
+    font-size: 0.875rem;
+}
+
+.small-link-list a:hover {
+    text-decoration: underline;
+}
+
+.panel-green .card-footer {
+    border-top: 2px solid #6B7C4A !important;
+    padding: 0.5rem 1rem;
+}
+
+.card-header .fa {
+    margin-right: 0px;
+}
+
+.pending-text {
+    font-size: 14px;
+}
+
+.nav-link.active {
+    background-color: #fff3 !important;
+}
+
+.page-container {
+    padding-left: 1.5rem;
+    /* Same as px-4 */
+    padding-right: 1.5rem;
+    margin-top: 1rem;
+}
+
+/* Only enable horizontal scroll on small screens */
+@media (max-width: 768px) {
+    .responsive-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table th,
+    .table td {
+        white-space: nowrap;
+        min-width: 150px;
+    }
+}
+
+@media (min-width: 769px) {
+    .responsive-table-wrapper {
+        overflow-x: unset;
+    }
+}
+
+/* Scroll only on small screens */
+@media (max-width: 768px) {
+    .responsive-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .responsive-table-wrapper .row {
+        flex-wrap: nowrap;
+        min-width: 650px;
+        /* ensure enough scroll area */
+    }
+}
+
+@media (min-width: 769px) {
+    .responsive-table-wrapper {
+        overflow-x: unset;
+    }
+}
+
+@media (max-width: 576px) {
+    .section-case-bg p {
+        font-size: 13px;
+    }
+
+    .table th,
+    .table td {
+        font-size: 13px;
+        padding: 0.5rem;
+    }
+}
+
+/* Remove column borders but keep horizontal row dividers */
+.no-border-table th {
+    border: 1px solid #dee2e6 !important;
+}
+
+.no-border-table tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    /* Optional: row separator */
+}
+
+.responsive-modal {
+    max-width: 90vw;
+    width: 100%;
+}
+
+@media (min-width: 576px) {
+    .responsive-modal {
+        max-width: 500px;
+    }
+}
+
+.page-item {
+    margin-right: 8px;
+}
+
+.page-link {
+    padding: 0.5rem 1rem;
+    /* You can adjust padding for better readability */
+}
+
+/* FontAwesome Checkbox Styling */
+.custom-checkbox {
+    position: relative;
+    padding-left: 2em;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 1em;
+    user-select: none;
+}
+
+.custom-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.custom-checkbox::before {
+    content: "\f1db";
+    /* FontAwesome unchecked circle */
+    font-family: "FontAwesome";
+    display: inline-block;
+    font-size: 1.2em;
+    color: #aaa;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1.4em;
+    height: 1.4em;
+    letter-spacing: 10px;
+}
+
+.custom-checkbox input[type="checkbox"]:checked+label::before {
+    content: "\f00c";
+    /* FontAwesome checkmark */
+    color: #000;
+}
+
+.custom-pagination .page-link {
+    font-weight: 500;
+    padding: 6px 12px;
+    margin: 0 2px;
+    border-radius: 4px;
+}
+
+.page-link {
+    border: none;
+    background-color: transparent;
+    font-weight: 500;
+}
+
+.page-item.active .page-link {
+    background-color: #6f2da8;
+    color: white;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .react-select__menu {
+        width: 100% !important;
+    }
+}
+
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .responsive-table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+#page-wrapper {
+    padding: 0 15px;
+    min-height: 568px;
+    background-color: #fff;
+    margin-left: 25%;
+    /* Adjusts the page content to accommodate the sidebar */
+    transition: margin-left 0.3s ease;
+    /* Smooth transition for the page shift when sidebar toggles */
+}
+
+/* Adjustments for responsive screens */
+@media (max-width: 991px) {
+    #page-wrapper {
+        margin-left: 0;
+        /* Reset margin on smaller screens */
+    }
+}
+
+.form-wrapper {
+    border: 1px solid #dee2e6;
+    /* Custom border color */
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    /* Optional shadow styling */
+    background-color: white;
+}
+
+@media (min-width: 768px) {
+    .dashboard-page {
+        margin-left: 250px;
+        /* or whatever sidebar width is */
+    }
+}

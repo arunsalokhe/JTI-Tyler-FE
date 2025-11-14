@@ -56,19 +56,35 @@ const DashboardPage: React.FC = () => {
         { name: 'JTI EFiling', icon: FileText }
     ];
 
+    // const handleServiceClick = (index: number, serviceName: string) => {
+    //     // Navigate to specific service pages
+    //     switch (index) {
+    //         case 0: // Court Filing
+    //             // navigate('/services/court-filing');
+    //             break;
+    //         case 1: // Process Serving
+    //             navigate('/services/process-serving/case-info');
+    //             break;
+    //         case 2: // Subpoena Domestication
+    //             // navigate('/services/subpoena-domestication');
+    //             break;
+    //         // Add more cases for other services
+    //         default:
+    //             console.log(`Selected service: ${serviceName}`);
+    //     }
+    // };
+
     const handleServiceClick = (index: number, serviceName: string) => {
-        // Navigate to specific service pages
-        switch (index) {
-            case 0: // Court Filing
-                // navigate('/services/court-filing');
+        switch (serviceName) {
+            case 'Tyler EFiling':
+                navigate('/tyler-filing'); // ✅ Navigate to Tyler Filing app
                 break;
-            case 1: // Process Serving
+            case 'Process Serving':
                 navigate('/services/process-serving/case-info');
                 break;
-            case 2: // Subpoena Domestication
-                // navigate('/services/subpoena-domestication');
+            case 'JTI EFiling':
+                navigate('/services/jti-filing/home-page');
                 break;
-            // Add more cases for other services
             default:
                 console.log(`Selected service: ${serviceName}`);
         }
@@ -77,16 +93,16 @@ const DashboardPage: React.FC = () => {
     return (
         <div className="min-h-screen bg-indigo-50">
             {/* Top Language Bar */}
-            <div className="bg-gray-900">
+            {/* <div className="bg-gray-900">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-1 flex justify-end">
                     <select className="bg-transparent text-gray-400 text-xs outline-none cursor-pointer">
                         <option>English</option>
                     </select>
                 </div>
-            </div>
+            </div> */}
 
             {/* Main Header */}
-            <header className="bg-white border-b border-gray-200">
+            <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between">
                         {/* Logo */}
@@ -105,8 +121,8 @@ const DashboardPage: React.FC = () => {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`py-6 text-sm font-medium border-b-2 transition whitespace-nowrap ${activeTab === tab
-                                            ? 'text-indigo-600 border-indigo-600'
-                                            : 'text-gray-600 border-transparent hover:text-gray-900'
+                                        ? 'text-indigo-600 border-indigo-600'
+                                        : 'text-gray-600 border-transparent hover:text-gray-900'
                                         }`}
                                 >
                                     {tab}
@@ -144,8 +160,8 @@ const DashboardPage: React.FC = () => {
                                             setMobileMenuOpen(false);
                                         }}
                                         className={`text-left px-4 py-2 text-sm font-medium rounded transition ${activeTab === tab
-                                                ? 'bg-indigo-50 text-indigo-600'
-                                                : 'text-gray-600 hover:bg-gray-50'
+                                            ? 'bg-indigo-50 text-indigo-600'
+                                            : 'text-gray-600 hover:bg-gray-50'
                                             }`}
                                     >
                                         {tab}
@@ -158,7 +174,7 @@ const DashboardPage: React.FC = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+            <main className="pt-20 lg:pt-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4 sm:pb-6 lg:pb-8">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
                     {/* LEFT COLUMN */}
                     <div className="lg:col-span-4 space-y-4 sm:space-y-6">
@@ -178,8 +194,8 @@ const DashboardPage: React.FC = () => {
                                             key={idx}
                                             onClick={() => handleServiceClick(idx, service.name)}
                                             className={`w-full text-left px-3 sm:px-4 py-2 sm:py-3 rounded-md text-xs sm:text-sm font-medium transition flex items-center ${idx === 0
-                                                    ? 'bg-indigo-600 text-white'
-                                                    : 'text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'text-indigo-600 hover:bg-indigo-50 border border-indigo-200'
                                                 }`}
                                         >
                                             <IconComponent className="w-3 h-3 sm:w-4 sm:h-4 mr-2 flex-shrink-0" />
@@ -262,8 +278,8 @@ const DashboardPage: React.FC = () => {
                                             key={period}
                                             onClick={() => setOrderPeriod(period)}
                                             className={`px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm rounded-md font-medium transition ${period === orderPeriod
-                                                    ? 'bg-indigo-600 text-white'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                                 }`}
                                         >
                                             {period}

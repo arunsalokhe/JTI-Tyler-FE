@@ -1,0 +1,19 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css?family=Raleway&display=swap');
+
+body {
+    font-family: 'Raleway', sans-serif;
+    font-size: 16px;
+}
+.header{
+    grid-area: head;
+    background-color:#68308e;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 999;
+}
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    background-color: #ffffff33;
+}

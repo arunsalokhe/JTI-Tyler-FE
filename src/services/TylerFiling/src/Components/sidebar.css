@@ -1,0 +1,44 @@
+.sidebar-menu{    
+    width: 270px;
+    background-color: #ffffff33;
+    position: absolute;
+    top: 52px;
+    
+}
+.sidebar-menu li{
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-top: 0 !important;
+}
+
+.sidebar-menu li a{
+    text-decoration: none;
+    color: #000;
+    width: 270px;
+    display: inline-flex;
+    
+}
+.sidebar-menu li .nav-link{
+    border-radius: 0 !important;
+    border-bottom:1px solid #dfdfdf;
+}
+
+.sidebar-menu li a:hover{
+    color: #000;
+    background-color: #3434341f;
+    border-bottom: 1px solid #3434341f;
+}
+#e-filing-side-menu .nav-link.active {
+    background-color: #3434341f !important;
+    border-bottom: 2px solid #ffa500;
+    color: #000 !important;
+}
+
+
+
+.sub-menu{
+    background-color: #9092f7;
+}
+
+.search-case input{
+    margin-left: 14px;
+}
