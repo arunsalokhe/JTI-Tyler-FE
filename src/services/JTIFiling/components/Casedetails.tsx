@@ -268,7 +268,7 @@ const CaseDetails: React.FC = () => {
               </div>
               
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              {/* <div className="flex items-center gap-2">
                 <button
                   onClick={handlePrint}
                   className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
@@ -290,7 +290,7 @@ const CaseDetails: React.FC = () => {
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
 
